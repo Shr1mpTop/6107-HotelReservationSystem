@@ -165,64 +165,6 @@ export default function Settings() {
           </button>
         </div>
       </div>
-
-      {/* System Information */}
-      <div className="settings-section">
-        <h3 className="section-title">System Information</h3>
-        <div className="info-card">
-          <div className="info-grid">
-            <div className="info-item">
-              <span className="info-label">System Name</span>
-              <span className="info-value">
-                Hotel Reservation Management System
-              </span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Version</span>
-              <span className="info-value">1.0.0</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Frontend</span>
-              <span className="info-value">Next.js 16.1.6 + React 19</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Backend</span>
-              <span className="info-value">FastAPI + Python</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Help & Support */}
-      <div className="settings-section">
-        <h3 className="section-title">Help & Support</h3>
-        <div className="help-card">
-          <p>
-            For technical support or questions about using the system, please
-            refer to the <strong>USER_GUIDE.md</strong> file in the project root
-            directory.
-          </p>
-          <div className="help-links">
-            <div className="help-item">
-              <strong>Documentation:</strong> Check PROJECT_SUMMARY.md for
-              system overview
-            </div>
-            <div className="help-item">
-              <strong>API Docs:</strong> Available at{" "}
-              <a
-                href="http://localhost:8000/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                http://localhost:8000/docs
-              </a>
-            </div>
-            <div className="help-item">
-              <strong>GitHub:</strong> Report issues on the project repository
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
