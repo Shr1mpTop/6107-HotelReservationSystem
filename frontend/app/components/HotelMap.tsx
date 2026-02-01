@@ -11,11 +11,18 @@ interface HotelMapProps {
   onRoomUpdate?: () => void;
 }
 
-export default function HotelMap({ rooms, onRoomClick, onRoomUpdate }: HotelMapProps) {
+export default function HotelMap({
+  rooms,
+  onRoomClick,
+  onRoomUpdate,
+}: HotelMapProps) {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [hoveredRoom, setHoveredRoom] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   // Group rooms by floor
   const roomsByFloor = rooms.reduce(
@@ -89,20 +96,29 @@ export default function HotelMap({ rooms, onRoomClick, onRoomUpdate }: HotelMapP
     try {
       const result = await ApiService.updateRoomStatus(
         selectedRoom.room_id,
-        newStatus
+        newStatus,
       );
-      
+
       if (result.success) {
-        setToast({ message: `Room status updated to ${newStatus}`, type: 'success' });
+        setToast({
+          message: `Room status updated to ${newStatus}`,
+          type: "success",
+        });
         setSelectedRoom(null);
         if (onRoomUpdate) {
           onRoomUpdate();
         }
       } else {
-        setToast({ message: result.message || 'Failed to update room status', type: 'error' });
+        setToast({
+          message: result.message || "Failed to update room status",
+          type: "error",
+        });
       }
     } catch (err: any) {
-      setToast({ message: err.response?.data?.detail || 'Failed to update room status', type: 'error' });
+      setToast({
+        message: err.response?.data?.detail || "Failed to update room status",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -294,7 +310,7 @@ export default function HotelMap({ rooms, onRoomClick, onRoomUpdate }: HotelMapP
               </span>
             </div>
           </div>
-          
+
           {/* Room Status Update Actions */}
           <div className="detail-panel-actions">
             {selectedRoom.status === "Dirty" && (
@@ -306,15 +322,16 @@ export default function HotelMap({ rooms, onRoomClick, onRoomUpdate }: HotelMapP
                 {loading ? "Updating..." : "✓ Mark as Clean"}
               </button>
             )}
-            {selectedRoom.status === "Clean" && !selectedRoom.has_reservation && (
-              <button
-                className="action-btn maintenance-btn"
-                onClick={() => handleUpdateRoomStatus("Maintenance")}
-                disabled={loading}
-              >
-                {loading ? "Updating..." : "⚠ Mark for Maintenance"}
-              </button>
-            )}
+            {selectedRoom.status === "Clean" &&
+              !selectedRoom.has_reservation && (
+                <button
+                  className="action-btn maintenance-btn"
+                  onClick={() => handleUpdateRoomStatus("Maintenance")}
+                  disabled={loading}
+                >
+                  {loading ? "Updating..." : "⚠ Mark for Maintenance"}
+                </button>
+              )}
             {selectedRoom.status === "Maintenance" && (
               <button
                 className="action-btn clean-btn"
@@ -327,7 +344,7 @@ export default function HotelMap({ rooms, onRoomClick, onRoomUpdate }: HotelMapP
           </div>
         </div>
       )}
-      
+
       {toast && (
         <Toast
           message={toast.message}
