@@ -1,17 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Room } from "../lib/api";
+import { Room, ApiService } from "../lib/api";
+import Toast from "./Toast";
 import "./HotelMap.css";
 
 interface HotelMapProps {
   rooms: Room[];
   onRoomClick?: (room: Room) => void;
+  onRoomUpdate?: () => void;
 }
 
-export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
+export default function HotelMap({ rooms, onRoomClick, onRoomUpdate }: HotelMapProps) {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [hoveredRoom, setHoveredRoom] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   // Group rooms by floor
   const roomsByFloor = rooms.reduce(
@@ -78,6 +82,32 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
     return "room-standard";
   };
 
+  const handleUpdateRoomStatus = async (newStatus: string) => {
+    if (!selectedRoom) return;
+
+    setLoading(true);
+    try {
+      const result = await ApiService.updateRoomStatus(
+        selectedRoom.room_id,
+        newStatus
+      );
+      
+      if (result.success) {
+        setToast({ message: `Room status updated to ${newStatus}`, type: 'success' });
+        setSelectedRoom(null);
+        if (onRoomUpdate) {
+          onRoomUpdate();
+        }
+      } else {
+        setToast({ message: result.message || 'Failed to update room status', type: 'error' });
+      }
+    } catch (err: any) {
+      setToast({ message: err.response?.data?.detail || 'Failed to update room status', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="hotel-map-container">
       <div className="hotel-map-header">
@@ -122,7 +152,7 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
       </div>
 
       <div className="floors-container">
-        {[3, 2, 1].map((floorNum) => {
+        {[5, 4, 3, 2, 1].map((floorNum) => {
           const floorRooms = roomsByFloor[floorNum] || [];
           if (floorRooms.length === 0) return null;
 
@@ -264,7 +294,46 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
               </span>
             </div>
           </div>
+          
+          {/* Room Status Update Actions */}
+          <div className="detail-panel-actions">
+            {selectedRoom.status === "Dirty" && (
+              <button
+                className="action-btn clean-btn"
+                onClick={() => handleUpdateRoomStatus("Clean")}
+                disabled={loading}
+              >
+                {loading ? "Updating..." : "✓ Mark as Clean"}
+              </button>
+            )}
+            {selectedRoom.status === "Clean" && !selectedRoom.has_reservation && (
+              <button
+                className="action-btn maintenance-btn"
+                onClick={() => handleUpdateRoomStatus("Maintenance")}
+                disabled={loading}
+              >
+                {loading ? "Updating..." : "⚠ Mark for Maintenance"}
+              </button>
+            )}
+            {selectedRoom.status === "Maintenance" && (
+              <button
+                className="action-btn clean-btn"
+                onClick={() => handleUpdateRoomStatus("Clean")}
+                disabled={loading}
+              >
+                {loading ? "Updating..." : "✓ Mark as Clean"}
+              </button>
+            )}
+          </div>
         </div>
+      )}
+      
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

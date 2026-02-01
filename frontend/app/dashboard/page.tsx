@@ -297,7 +297,7 @@ export default function DashboardPage() {
             <div>
               <h2 className="section-header">Interactive Hotel Map</h2>
               {rooms.length > 0 ? (
-                <HotelMap rooms={rooms} />
+                <HotelMap rooms={rooms} onRoomUpdate={loadRooms} />
               ) : (
                 <div style={{ textAlign: "center", padding: "3rem" }}>
                   <p>Loading hotel map...</p>
