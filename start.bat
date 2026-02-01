@@ -28,13 +28,13 @@ if %errorlevel% neq 0 (
 echo All prerequisites are installed.
 echo.
 echo Starting Backend Server...
-start "HRMS Backend" cmd /k "run_backend.bat"
+start "HRMS Backend" cmd /k "%~dp0run_backend.bat"
 
 echo Waiting 5 seconds for backend to start...
 timeout /t 5 /nobreak >nul
 
 echo Starting Frontend Server...
-start "HRMS Frontend" cmd /k "run_frontend.bat"
+start "HRMS Frontend" cmd /k "%~dp0run_frontend.bat"
 
 echo.
 echo ========================================

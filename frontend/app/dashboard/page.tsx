@@ -10,6 +10,10 @@ import {
   Room,
   Reservation,
 } from "../lib/api";
+import HotelMap from "../components/HotelMap";
+import StatsCharts from "../components/StatsCharts";
+import Loading from "../components/Loading";
+import ReservationForm from "../components/ReservationForm";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -35,7 +39,18 @@ export default function DashboardPage() {
 
     // Load initial data
     loadDashboardStats();
-  }, [router]);
+    loadRooms(); // Load rooms for hotel map
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      if (activeSection === "dashboard" || activeSection === "hotel-map") {
+        loadDashboardStats();
+        loadRooms();
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [router, activeSection]);
 
   const loadDashboardStats = async () => {
     setLoading(true);
@@ -98,10 +113,17 @@ export default function DashboardPage() {
 
   return (
     <>
+      {loading && (
+        <Loading
+          text="Loading Hotel Data..."
+          subtext="Please wait while we fetch the latest information"
+        />
+      )}
+
       {/* Navigation Bar */}
       <nav className="navbar">
         <div className="nav-brand">
-          <h2>HRMS Dashboard</h2>
+          <h2>🏨 HRMS Dashboard</h2>
         </div>
         <div className="nav-menu">
           <span className="user-info">
@@ -125,25 +147,125 @@ export default function DashboardPage() {
             <span>Dashboard</span>
           </div>
           <div
-            className={`menu-item ${activeSection === "rooms" ? "active" : ""}`}
-            onClick={() => handleSectionChange("rooms")}
+            className={`menu-item ${activeSection === "hotel-map" ? "active" : ""}`}
+            onClick={() => handleSectionChange("hotel-map")}
           >
-            <span className="menu-icon">▢</span>
-            <span>Rooms</span>
+            <span className="menu-icon">M</span>
+            <span>Hotel Map</span>
           </div>
-          <div
-            className={`menu-item ${activeSection === "reservations" ? "active" : ""}`}
-            onClick={() => handleSectionChange("reservations")}
-          >
-            <span className="menu-icon">◷</span>
-            <span>Reservations</span>
-          </div>
+
+          {/* Reservation Management */}
+          <div className="menu-category">Reservations</div>
           <div
             className={`menu-item ${activeSection === "new-reservation" ? "active" : ""}`}
             onClick={() => handleSectionChange("new-reservation")}
           >
             <span className="menu-icon">+</span>
             <span>New Reservation</span>
+          </div>
+          <div
+            className={`menu-item ${activeSection === "reservations" ? "active" : ""}`}
+            onClick={() => handleSectionChange("reservations")}
+          >
+            <span className="menu-icon">◷</span>
+            <span>All Reservations</span>
+          </div>
+          <div
+            className={`menu-item ${activeSection === "today-checkins" ? "active" : ""}`}
+            onClick={() => handleSectionChange("today-checkins")}
+          >
+            <span className="menu-icon">T</span>
+            <span>Today Check-ins</span>
+          </div>
+          <div
+            className={`menu-item ${activeSection === "current-guests" ? "active" : ""}`}
+            onClick={() => handleSectionChange("current-guests")}
+          >
+            <span className="menu-icon">G</span>
+            <span>Current Guests</span>
+          </div>
+
+          {/* Operations */}
+          <div className="menu-category">Operations</div>
+          <div
+            className={`menu-item ${activeSection === "check-in" ? "active" : ""}`}
+            onClick={() => handleSectionChange("check-in")}
+          >
+            <span className="menu-icon">I</span>
+            <span>Check-in</span>
+          </div>
+          <div
+            className={`menu-item ${activeSection === "check-out" ? "active" : ""}`}
+            onClick={() => handleSectionChange("check-out")}
+          >
+            <span className="menu-icon">O</span>
+            <span>Check-out</span>
+          </div>
+
+          {/* Room Management */}
+          <div className="menu-category">Rooms</div>
+          <div
+            className={`menu-item ${activeSection === "rooms" ? "active" : ""}`}
+            onClick={() => handleSectionChange("rooms")}
+          >
+            <span className="menu-icon">▢</span>
+            <span>Room List</span>
+          </div>
+          {user?.role === "admin" && (
+            <>
+              <div
+                className={`menu-item ${activeSection === "room-types" ? "active" : ""}`}
+                onClick={() => handleSectionChange("room-types")}
+              >
+                <span className="menu-icon">R</span>
+                <span>Room Types</span>
+              </div>
+              <div
+                className={`menu-item ${activeSection === "pricing" ? "active" : ""}`}
+                onClick={() => handleSectionChange("pricing")}
+              >
+                <span className="menu-icon">¥</span>
+                <span>Seasonal Pricing</span>
+              </div>
+            </>
+          )}
+
+          {/* Reports (Admin only) */}
+          {user?.role === "admin" && (
+            <>
+              <div className="menu-category">Reports</div>
+              <div
+                className={`menu-item ${activeSection === "occupancy-report" ? "active" : ""}`}
+                onClick={() => handleSectionChange("occupancy-report")}
+              >
+                <span className="menu-icon">%</span>
+                <span>Occupancy Report</span>
+              </div>
+              <div
+                className={`menu-item ${activeSection === "revenue-report" ? "active" : ""}`}
+                onClick={() => handleSectionChange("revenue-report")}
+              >
+                <span className="menu-icon">$</span>
+                <span>Revenue Report</span>
+              </div>
+              <div
+                className={`menu-item ${activeSection === "audit-logs" ? "active" : ""}`}
+                onClick={() => handleSectionChange("audit-logs")}
+              >
+                <span className="menu-icon">A</span>
+                <span>Audit Logs</span>
+              </div>
+            </>
+          )}
+
+          {/* System */}
+          <div className="menu-category">System</div>
+          <div
+            className={`menu-item ${activeSection === "settings" ? "active" : ""}`}
+            onClick={() => handleSectionChange("settings")}
+          >
+            <span className="menu-icon">S</span>
+            <span>Settings</span>
           </div>
         </div>
 
@@ -155,49 +277,25 @@ export default function DashboardPage() {
           {activeSection === "dashboard" && (
             <div>
               <h2 className="section-header">Dashboard Overview</h2>
-              {stats && (
-                <div className="stats-grid">
-                  <div className="stat-card">
-                    <div className="stat-icon">R</div>
-                    <div className="stat-info">
-                      <h3>{stats.total_rooms}</h3>
-                      <p>Total Rooms</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">A</div>
-                    <div className="stat-info">
-                      <h3>{stats.available_rooms}</h3>
-                      <p>Available Rooms</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">O</div>
-                    <div className="stat-info">
-                      <h3>{stats.occupied_rooms}</h3>
-                      <p>Occupied Rooms</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">%</div>
-                    <div className="stat-info">
-                      <h3>{stats.occupancy_rate}%</h3>
-                      <p>Occupancy Rate</p>
-                    </div>
-                  </div>
+              {stats ? (
+                <StatsCharts stats={stats} />
+              ) : (
+                <p>Loading statistics...</p>
+              )}
+            </div>
+          )}
+
+          {/* Hotel Map Section */}
+          {activeSection === "hotel-map" && (
+            <div>
+              <h2 className="section-header">Interactive Hotel Map</h2>
+              {rooms.length > 0 ? (
+                <HotelMap rooms={rooms} />
+              ) : (
+                <div style={{ textAlign: "center", padding: "3rem" }}>
+                  <p>Loading hotel map...</p>
                 </div>
               )}
-              <div
-                style={{
-                  background: "white",
-                  padding: "2rem",
-                  borderRadius: "10px",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                }}
-              >
-                <h3>System Status</h3>
-                <p>All services are operational.</p>
-              </div>
             </div>
           )}
 
@@ -310,17 +408,14 @@ export default function DashboardPage() {
           {activeSection === "new-reservation" && (
             <div>
               <h2 className="section-header">Create New Reservation</h2>
-              <div
-                style={{
-                  background: "white",
-                  padding: "2rem",
-                  borderRadius: "10px",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+              <ReservationForm
+                onSuccess={() => {
+                  // Refresh data and switch to reservations view
+                  loadReservations();
+                  loadDashboardStats();
+                  setTimeout(() => setActiveSection("reservations"), 2000);
                 }}
-              >
-                <p>New reservation form will be available here.</p>
-                <p>This feature is under development.</p>
-              </div>
+              />
             </div>
           )}
         </div>

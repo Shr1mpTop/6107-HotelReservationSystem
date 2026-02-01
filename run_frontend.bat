@@ -7,6 +7,9 @@ echo Next.js Frontend
 echo ========================================
 echo.
 
+REM Change to script directory first
+cd /d "%~dp0"
+
 REM Check if Node.js is installed
 node --version >nul 2>&1
 if %errorlevel% neq 0 (

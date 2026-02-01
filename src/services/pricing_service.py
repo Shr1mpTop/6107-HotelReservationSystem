@@ -141,6 +141,25 @@ class PricingService:
         }
     
     @staticmethod
+    def calculate_price(room_type_id: int, check_in_date: str, 
+                       check_out_date: str) -> float:
+        """
+        Calculate total price for a room reservation (simple version for API)
+        
+        Args:
+            room_type_id: Room type ID
+            check_in_date: Check-in date (YYYY-MM-DD)
+            check_out_date: Check-out date (YYYY-MM-DD)
+            
+        Returns:
+            Total price as float
+        """
+        result = PricingService.calculate_total_price(
+            room_type_id, check_in_date, check_out_date
+        )
+        return result.get('total', 0.0)
+    
+    @staticmethod
     def add_seasonal_pricing(room_type_id: int, season_name: str,
                            start_date: str, end_date: str,
                            price_multiplier: float = None,

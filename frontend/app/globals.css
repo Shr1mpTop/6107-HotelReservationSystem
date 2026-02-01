@@ -25,6 +25,39 @@ body {
   line-height: 1.6;
   color: var(--text-color);
   background-color: var(--bg-color);
+  overflow-x: hidden;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5a6fd8, #6440a1);
+}
+
+/* Selection */
+::selection {
+  background: #667eea;
+  color: white;
 }
 
 a {
@@ -120,25 +153,48 @@ button {
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   display: inline-block;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.6s,
+    height 0.6s;
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), #764ba2);
   color: white;
   width: 100%;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-dark);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
   text-decoration: none;
 }
 
@@ -229,13 +285,29 @@ button {
 
 /* Dashboard Layout */
 .navbar {
-  background-color: var(--dark-color);
+  background: linear-gradient(135deg, #1f2937, #374151);
   color: white;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .nav-brand {
@@ -270,37 +342,80 @@ button {
   background-color: white;
   border-right: 1px solid var(--border-color);
   padding: 2rem 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 70px);
+}
+
+.menu-category {
+  padding: 0.5rem 2rem;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.menu-category:first-child {
+  margin-top: 0;
 }
 
 .menu-item {
   padding: 1rem 2rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border-left: 4px solid transparent;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, #667eea, transparent);
+  transition: width 0.4s ease;
+  z-index: -1;
 }
 
 .menu-item:hover {
   background-color: var(--light-color);
   border-left-color: var(--primary-color);
+  transform: translateX(5px);
+}
+
+.menu-item:hover::before {
+  width: 100%;
 }
 
 .menu-item.active {
-  background-color: #e7f3ff;
+  background: linear-gradient(90deg, #e7f3ff, transparent);
   border-left-color: var(--primary-color);
   color: var(--primary-color);
-  font-weight: 500;
+  font-weight: 600;
+  transform: translateX(8px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
 .menu-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
+  transition: transform 0.4s ease;
+}
+
+.menu-item:hover .menu-icon,
+.menu-item.active .menu-icon {
+  transform: scale(1.2) rotate(5deg);
 }
 
 .content {
@@ -311,9 +426,45 @@ button {
 
 .section-header {
   color: var(--dark-color);
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+  font-size: 2rem;
+  font-weight: 700;
+  position: relative;
+  animation: fadeInLeft 0.6s ease-out;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.section-header::before {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  animation: expandWidth 0.8s ease-out;
+}
+
+@keyframes expandWidth {
+  from {
+    width: 0;
+  }
+  to {
+    width: 80px;
+  }
 }
 
 /* Dashboard Stats */
