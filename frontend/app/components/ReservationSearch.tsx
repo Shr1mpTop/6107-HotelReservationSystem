@@ -325,12 +325,8 @@ export default function ReservationSearch({ onEdit }: ReservationSearchProps) {
                     <td>{reservation.guest_name}</td>
                     <td>{reservation.phone}</td>
                     <td>{reservation.room_number}</td>
-                    <td>
-                      {formatDate(reservation.check_in_date)}
-                    </td>
-                    <td>
-                      {formatDate(reservation.check_out_date)}
-                    </td>
+                    <td>{formatDate(reservation.check_in_date)}</td>
+                    <td>{formatDate(reservation.check_out_date)}</td>
                     <td>
                       <span
                         className={`status-badge ${getStatusColor(reservation.status)}`}
