@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ApiService, RoomType, SeasonalPricing, Room, formatDate } from "../lib/api";
+import {
+  ApiService,
+  RoomType,
+  SeasonalPricing,
+  Room,
+  formatDate,
+} from "../lib/api";
 import Toast from "./Toast";
 import "../components/RoomManagement.css";
 
@@ -12,9 +18,9 @@ interface RoomManagementProps {
 export default function RoomManagement({
   defaultTab = "room-types",
 }: RoomManagementProps) {
-  const [activeTab, setActiveTab] = useState<"rooms" | "room-types" | "seasonal-pricing">(
-    defaultTab,
-  );
+  const [activeTab, setActiveTab] = useState<
+    "rooms" | "room-types" | "seasonal-pricing"
+  >(defaultTab);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [seasonalPricing, setSeasonalPricing] = useState<SeasonalPricing[]>([]);
@@ -93,7 +99,9 @@ export default function RoomManagement({
   };
 
   const handleUpdateRoomStatus = async (roomId: number, newStatus: string) => {
-    if (!confirm(`Are you sure you want to change room status to ${newStatus}?`)) {
+    if (
+      !confirm(`Are you sure you want to change room status to ${newStatus}?`)
+    ) {
       return;
     }
 
@@ -332,19 +340,25 @@ export default function RoomManagement({
             <h2>Room Status Management</h2>
             <div className="header-stats">
               <span className="stat-badge stat-clean">
-                Clean: {rooms.filter(r => r.status === "Clean" && !r.has_reservation).length}
+                Clean:{" "}
+                {
+                  rooms.filter(
+                    (r) => r.status === "Clean" && !r.has_reservation,
+                  ).length
+                }
               </span>
               <span className="stat-badge stat-reserved">
-                Reserved: {rooms.filter(r => r.has_reservation).length}
+                Reserved: {rooms.filter((r) => r.has_reservation).length}
               </span>
               <span className="stat-badge stat-occupied">
-                Occupied: {rooms.filter(r => r.status === "Occupied").length}
+                Occupied: {rooms.filter((r) => r.status === "Occupied").length}
               </span>
               <span className="stat-badge stat-dirty">
-                Dirty: {rooms.filter(r => r.status === "Dirty").length}
+                Dirty: {rooms.filter((r) => r.status === "Dirty").length}
               </span>
               <span className="stat-badge stat-maintenance">
-                Maintenance: {rooms.filter(r => r.status === "Maintenance").length}
+                Maintenance:{" "}
+                {rooms.filter((r) => r.status === "Maintenance").length}
               </span>
             </div>
           </div>
@@ -365,7 +379,10 @@ export default function RoomManagement({
               <tbody>
                 {rooms.length === 0 ? (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: "center", padding: "2rem" }}>
+                    <td
+                      colSpan={7}
+                      style={{ textAlign: "center", padding: "2rem" }}
+                    >
                       {loading ? "Loading rooms..." : "No rooms found"}
                     </td>
                   </tr>
@@ -398,37 +415,52 @@ export default function RoomManagement({
                             {room.status === "Dirty" && (
                               <button
                                 className="btn-action btn-clean"
-                                onClick={() => handleUpdateRoomStatus(room.room_id, "Clean")}
+                                onClick={() =>
+                                  handleUpdateRoomStatus(room.room_id, "Clean")
+                                }
                                 disabled={loading}
                                 title="Mark as Clean"
                               >
                                 ✓ Clean
                               </button>
                             )}
-                            {room.status === "Clean" && !room.has_reservation && (
-                              <>
-                                <button
-                                  className="btn-action btn-dirty"
-                                  onClick={() => handleUpdateRoomStatus(room.room_id, "Dirty")}
-                                  disabled={loading}
-                                  title="Mark as Dirty"
-                                >
-                                  ◐ Dirty
-                                </button>
-                                <button
-                                  className="btn-action btn-maintenance"
-                                  onClick={() => handleUpdateRoomStatus(room.room_id, "Maintenance")}
-                                  disabled={loading}
-                                  title="Mark for Maintenance"
-                                >
-                                  ⚠ Maintenance
-                                </button>
-                              </>
-                            )}
+                            {room.status === "Clean" &&
+                              !room.has_reservation && (
+                                <>
+                                  <button
+                                    className="btn-action btn-dirty"
+                                    onClick={() =>
+                                      handleUpdateRoomStatus(
+                                        room.room_id,
+                                        "Dirty",
+                                      )
+                                    }
+                                    disabled={loading}
+                                    title="Mark as Dirty"
+                                  >
+                                    ◐ Dirty
+                                  </button>
+                                  <button
+                                    className="btn-action btn-maintenance"
+                                    onClick={() =>
+                                      handleUpdateRoomStatus(
+                                        room.room_id,
+                                        "Maintenance",
+                                      )
+                                    }
+                                    disabled={loading}
+                                    title="Mark for Maintenance"
+                                  >
+                                    ⚠ Maintenance
+                                  </button>
+                                </>
+                              )}
                             {room.status === "Maintenance" && (
                               <button
                                 className="btn-action btn-clean"
-                                onClick={() => handleUpdateRoomStatus(room.room_id, "Clean")}
+                                onClick={() =>
+                                  handleUpdateRoomStatus(room.room_id, "Clean")
+                                }
                                 disabled={loading}
                                 title="Mark as Clean"
                               >
