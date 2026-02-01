@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ApiService, ReservationDetail } from "../lib/api";
+import { ApiService, ReservationDetail, formatDate } from "../lib/api";
 import Toast from "./Toast";
 import "../components/CheckOutForm.css";
 
@@ -279,13 +279,13 @@ export default function CheckOutForm({ onSuccess }: CheckOutFormProps) {
                 <div className="detail-item">
                   <span className="detail-label">Check-in Date</span>
                   <span className="detail-value">
-                    {new Date(reservation.check_in_date).toLocaleDateString()}
+                    {formatDate(reservation.check_in_date)}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Check-out Date</span>
                   <span className="detail-value">
-                    {new Date(reservation.check_out_date).toLocaleDateString()}
+                    {formatDate(reservation.check_out_date)}
                   </span>
                 </div>
                 <div className="detail-item">

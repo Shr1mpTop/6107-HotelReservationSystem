@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ApiService, RoomType, SeasonalPricing } from "../lib/api";
+import { ApiService, RoomType, SeasonalPricing, formatDate } from "../lib/api";
 import Toast from "./Toast";
 import "../components/RoomManagement.css";
 
@@ -356,8 +356,8 @@ export default function RoomManagement({
                     <td>#{pricing.pricing_id}</td>
                     <td>{pricing.type_name}</td>
                     <td>{pricing.season_name}</td>
-                    <td>{new Date(pricing.start_date).toLocaleDateString()}</td>
-                    <td>{new Date(pricing.end_date).toLocaleDateString()}</td>
+                    <td>{formatDate(pricing.start_date)}</td>
+                    <td>{formatDate(pricing.end_date)}</td>
                     <td>
                       {pricing.price_multiplier
                         ? `${pricing.price_multiplier}x`

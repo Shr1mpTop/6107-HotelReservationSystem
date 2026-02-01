@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   ApiService,
+  formatDateTime,
   OccupancyReport,
   RevenueReport,
   AuditLog,
@@ -508,7 +509,7 @@ export default function Reports({ defaultTab = "occupancy" }: ReportsProps) {
                   <tbody>
                     {auditLogs.map((log) => (
                       <tr key={log.audit_id}>
-                        <td>{new Date(log.timestamp).toLocaleString()}</td>
+                        <td>{formatDateTime(log.timestamp)}</td>
                         <td>{log.username}</td>
                         <td>
                           <span
@@ -591,7 +592,7 @@ export default function Reports({ defaultTab = "occupancy" }: ReportsProps) {
                           </span>
                         </td>
                         <td>{backup.username}</td>
-                        <td>{new Date(backup.created_at).toLocaleString()}</td>
+                        <td>{formatDateTime(backup.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>

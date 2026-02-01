@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ApiService, ReservationDetail } from "../lib/api";
+import { ApiService, ReservationDetail, formatDate } from "../lib/api";
 import Toast from "./Toast";
 import "../components/GuestsList.css";
 
@@ -128,13 +128,13 @@ export default function GuestsList({ type }: GuestsListProps) {
                 <div className="info-row">
                   <span className="info-label">Check-in</span>
                   <span className="info-value">
-                    {new Date(guest.check_in_date).toLocaleDateString()}
+                    {formatDate(guest.check_in_date)}
                   </span>
                 </div>
                 <div className="info-row">
                   <span className="info-label">Check-out</span>
                   <span className="info-value">
-                    {new Date(guest.check_out_date).toLocaleDateString()}
+                    {formatDate(guest.check_out_date)}
                   </span>
                 </div>
                 <div className="info-row">
@@ -211,17 +211,13 @@ export default function GuestsList({ type }: GuestsListProps) {
                   <div className="detail-item">
                     <span className="label">Check-in Date:</span>
                     <span className="value">
-                      {new Date(
-                        selectedGuest.check_in_date,
-                      ).toLocaleDateString()}
+                      {formatDate(selectedGuest.check_in_date)}
                     </span>
                   </div>
                   <div className="detail-item">
                     <span className="label">Check-out Date:</span>
                     <span className="value">
-                      {new Date(
-                        selectedGuest.check_out_date,
-                      ).toLocaleDateString()}
+                      {formatDate(selectedGuest.check_out_date)}
                     </span>
                   </div>
                   <div className="detail-item">

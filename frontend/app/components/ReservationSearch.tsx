@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ApiService, ReservationDetail } from "../lib/api";
+import { ApiService, ReservationDetail, formatDate } from "../lib/api";
 import Toast from "./Toast";
 import "../components/ReservationSearch.css";
 
@@ -326,12 +326,10 @@ export default function ReservationSearch({ onEdit }: ReservationSearchProps) {
                     <td>{reservation.phone}</td>
                     <td>{reservation.room_number}</td>
                     <td>
-                      {new Date(reservation.check_in_date).toLocaleDateString()}
+                      {formatDate(reservation.check_in_date)}
                     </td>
                     <td>
-                      {new Date(
-                        reservation.check_out_date,
-                      ).toLocaleDateString()}
+                      {formatDate(reservation.check_out_date)}
                     </td>
                     <td>
                       <span
@@ -416,17 +414,13 @@ export default function ReservationSearch({ onEdit }: ReservationSearchProps) {
                       <div className="detail-item">
                         <span className="label">Check-in:</span>
                         <span className="value">
-                          {new Date(
-                            selectedReservation.check_in_date,
-                          ).toLocaleDateString()}
+                          {formatDate(selectedReservation.check_in_date)}
                         </span>
                       </div>
                       <div className="detail-item">
                         <span className="label">Check-out:</span>
                         <span className="value">
-                          {new Date(
-                            selectedReservation.check_out_date,
-                          ).toLocaleDateString()}
+                          {formatDate(selectedReservation.check_out_date)}
                         </span>
                       </div>
                       <div className="detail-item">
