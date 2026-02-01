@@ -1,6 +1,6 @@
 """
-数据库管理器模块
-负责SQLite数据库连接、操作和事务管理
+Database Manager Module
+Responsible for SQLite database connection, operation and transaction management
 """
 
 import sqlite3
@@ -11,13 +11,13 @@ import threading
 
 
 class DatabaseManager:
-    """数据库管理器类"""
+    """Database Manager Class"""
     
     _instance = None
     _lock = threading.Lock()
     
     def __new__(cls, db_path: str = None):
-        """单例模式实现"""
+        """Singleton pattern implementation"""
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -25,33 +25,33 @@ class DatabaseManager:
         return cls._instance
     
     def __init__(self, db_path: str = None):
-        """初始化数据库管理器"""
+        """Initialize database manager"""
         if not hasattr(self, 'initialized'):
             self.db_path = db_path or os.path.join('data', 'hrms.db')
             self.initialized = True
             self._ensure_db_directory()
     
     def _ensure_db_directory(self):
-        """确保数据库目录存在"""
+        """Ensure database directory exists"""
         db_dir = os.path.dirname(self.db_path)
         if db_dir and not os.path.exists(db_dir):
             os.makedirs(db_dir)
     
     def get_connection(self) -> sqlite3.Connection:
-        """获取数据库连接"""
+        """Get database connection"""
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        conn.row_factory = sqlite3.Row  # 使用Row工厂，支持列名访问
-        # 启用外键约束
+        conn.row_factory = sqlite3.Row  # Use Row factory, support column name access
+        # Enable foreign key constraints
         conn.execute("PRAGMA foreign_keys = ON")
         return conn
     
     @contextmanager
     def get_cursor(self, commit: bool = False):
         """
-        上下文管理器获取数据库游标
+        Context manager to get database cursor
         
         Args:
-            commit: 是否在结束时自动提交事务
+            commit: Whether to automatically commit transaction at the end
         """
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -68,14 +68,14 @@ class DatabaseManager:
     
     def execute_query(self, query: str, params: Tuple = None) -> List[sqlite3.Row]:
         """
-        执行查询并返回结果
+        Execute query and return results
         
         Args:
-            query: SQL查询语句
-            params: 查询参数
+            query: SQL query statement
+            params: Query parameters
             
         Returns:
-            查询结果列表
+            List of query results
         """
         with self.get_cursor() as cursor:
             if params:
@@ -86,14 +86,14 @@ class DatabaseManager:
     
     def execute_update(self, query: str, params: Tuple = None) -> int:
         """
-        执行更新操作（INSERT, UPDATE, DELETE）
+        Execute update operation (INSERT, UPDATE, DELETE)
         
         Args:
-            query: SQL语句
-            params: 参数
+            query: SQL statement
+            params: Parameters
             
         Returns:
-            受影响的行数
+            Number of affected rows
         """
         with self.get_cursor(commit=True) as cursor:
             if params:
@@ -104,14 +104,14 @@ class DatabaseManager:
     
     def execute_insert(self, query: str, params: Tuple = None) -> int:
         """
-        执行插入操作并返回新插入记录的ID
+        Execute insert operation and return ID of newly inserted record
         
         Args:
-            query: INSERT语句
-            params: 参数
+            query: INSERT statement
+            params: Parameters
             
         Returns:
-            新插入记录的ID
+            ID of newly inserted record
         """
         with self.get_cursor(commit=True) as cursor:
             if params:
@@ -122,14 +122,14 @@ class DatabaseManager:
     
     def execute_many(self, query: str, params_list: List[Tuple]) -> int:
         """
-        批量执行SQL语句
+        Execute SQL statements in batch
         
         Args:
-            query: SQL语句
-            params_list: 参数列表
+            query: SQL statement
+            params_list: List of parameters
             
         Returns:
-            受影响的总行数
+            Total number of affected rows
         """
         with self.get_cursor(commit=True) as cursor:
             cursor.executemany(query, params_list)
@@ -137,10 +137,10 @@ class DatabaseManager:
     
     def execute_script(self, script: str):
         """
-        执行SQL脚本
+        Execute SQL script
         
         Args:
-            script: SQL脚本内容
+            script: SQL script content
         """
         conn = self.get_connection()
         try:
@@ -154,13 +154,13 @@ class DatabaseManager:
     
     def table_exists(self, table_name: str) -> bool:
         """
-        检查表是否存在
+        Check if table exists
         
         Args:
-            table_name: 表名
+            table_name: Table name
             
         Returns:
-            表是否存在
+            Whether table exists
         """
         query = """
             SELECT name FROM sqlite_master 
@@ -171,13 +171,13 @@ class DatabaseManager:
     
     def get_table_info(self, table_name: str) -> List[Dict[str, Any]]:
         """
-        获取表结构信息
+        Get table structure information
         
         Args:
-            table_name: 表名
+            table_name: Table name
             
         Returns:
-            表结构信息列表
+            List of table structure information
         """
         query = f"PRAGMA table_info({table_name})"
         rows = self.execute_query(query)
@@ -185,17 +185,17 @@ class DatabaseManager:
     
     def backup_database(self, backup_path: str):
         """
-        备份数据库
+        Backup database
         
         Args:
-            backup_path: 备份文件路径
+            backup_path: Backup file path
         """
-        # 确保备份目录存在
+        # Ensure backup directory exists
         backup_dir = os.path.dirname(backup_path)
         if backup_dir and not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
         
-        # 执行备份
+        # Perform backup
         source = self.get_connection()
         dest = sqlite3.connect(backup_path)
         
@@ -207,17 +207,17 @@ class DatabaseManager:
     
     def get_database_size(self) -> int:
         """
-        获取数据库文件大小（字节）
+        Get database file size (bytes)
         
         Returns:
-            数据库文件大小
+            Database file size
         """
         if os.path.exists(self.db_path):
             return os.path.getsize(self.db_path)
         return 0
     
     def vacuum(self):
-        """优化数据库，回收空间"""
+        """Optimize database, reclaim space"""
         conn = self.get_connection()
         try:
             conn.execute("VACUUM")
@@ -227,13 +227,13 @@ class DatabaseManager:
     
     def row_to_dict(self, row: sqlite3.Row) -> Dict[str, Any]:
         """
-        将sqlite3.Row对象转换为字典
+        Convert sqlite3.Row object to dictionary
         
         Args:
-            row: Row对象
+            row: Row object
             
         Returns:
-            字典形式的数据
+            Data in dictionary form
         """
         if row is None:
             return None
@@ -241,16 +241,16 @@ class DatabaseManager:
     
     def rows_to_dict_list(self, rows: List[sqlite3.Row]) -> List[Dict[str, Any]]:
         """
-        将Row对象列表转换为字典列表
+        Convert list of Row objects to list of dictionaries
         
         Args:
-            rows: Row对象列表
+            rows: List of Row objects
             
         Returns:
-            字典列表
+            List of dictionaries
         """
         return [dict(row) for row in rows]
 
 
-# 创建全局数据库管理器实例
+# Create global database manager instance
 db_manager = DatabaseManager()
