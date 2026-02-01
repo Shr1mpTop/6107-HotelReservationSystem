@@ -1,4 +1,4 @@
-"""工具函数模块 - 输入验证"""
+"""Utility functions module - Input validation"""
 
 import re
 from datetime import datetime
@@ -6,13 +6,13 @@ from datetime import datetime
 
 def validate_date(date_str: str) -> bool:
     """
-    验证日期格式
+    Validate date format
     
     Args:
-        date_str: 日期字符串 (YYYY-MM-DD)
+        date_str: Date string (YYYY-MM-DD)
         
     Returns:
-        是否有效
+        Whether valid
     """
     try:
         datetime.strptime(date_str, '%Y-%m-%d')
@@ -23,13 +23,13 @@ def validate_date(date_str: str) -> bool:
 
 def validate_phone(phone: str) -> bool:
     """
-    验证手机号格式
+    Validate phone number format
     
     Args:
-        phone: 手机号
+        phone: Phone number
         
     Returns:
-        是否有效
+        Whether valid
     """
     # 简单验证：11位数字
     pattern = r'^\d{11}$'
@@ -38,13 +38,13 @@ def validate_phone(phone: str) -> bool:
 
 def validate_email(email: str) -> bool:
     """
-    验证邮箱格式
+    Validate email format
     
     Args:
-        email: 邮箱地址
+        email: Email address
         
     Returns:
-        是否有效
+        Whether valid
     """
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return bool(re.match(pattern, email))
@@ -52,13 +52,13 @@ def validate_email(email: str) -> bool:
 
 def validate_id_number(id_number: str) -> bool:
     """
-    验证身份证号格式
+    Validate ID number format
     
     Args:
-        id_number: 身份证号
+        id_number: ID number
         
     Returns:
-        是否有效
+        Whether valid
     """
     # 简单验证：15或18位
     pattern = r'^\d{15}$|^\d{17}[\dXx]$'
@@ -67,13 +67,13 @@ def validate_id_number(id_number: str) -> bool:
 
 def sanitize_input(text: str) -> str:
     """
-    清理用户输入
+    Sanitize user input
     
     Args:
-        text: 输入文本
+        text: Input text
         
     Returns:
-        清理后的文本
+        Sanitized text
     """
     if not text:
         return ""

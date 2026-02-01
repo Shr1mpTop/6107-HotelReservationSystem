@@ -26,14 +26,14 @@ def calculate_nights(check_in: str, check_out: str) -> int:
 
 def get_date_range(start_date: str, end_date: str) -> List[str]:
     """
-    获取日期范围内的所有日期
+    Get all dates within a date range
     
     Args:
-        start_date: 开始日期 (YYYY-MM-DD)
-        end_date: 结束日期 (YYYY-MM-DD)
+        start_date: Start date (YYYY-MM-DD)
+        end_date: End date (YYYY-MM-DD)
         
     Returns:
-        日期列表
+        List of dates
     """
     try:
         start = datetime.strptime(start_date, '%Y-%m-%d')
@@ -52,28 +52,28 @@ def get_date_range(start_date: str, end_date: str) -> List[str]:
 
 def format_price(amount: float) -> str:
     """
-    格式化价格
+    Format price
     
     Args:
-        amount: 金额
+        amount: Amount
         
     Returns:
-        格式化后的字符串
+        Formatted string
     """
     return f"¥{amount:,.2f}"
 
 
 def truncate_string(text: str, length: int = 50, suffix: str = '...') -> str:
     """
-    截断字符串
+    Truncate string
     
     Args:
-        text: 文本
-        length: 最大长度
-        suffix: 后缀
+        text: Text
+        length: Maximum length
+        suffix: Suffix
         
     Returns:
-        截断后的字符串
+        Truncated string
     """
     if not text:
         return ""
@@ -86,14 +86,14 @@ def truncate_string(text: str, length: int = 50, suffix: str = '...') -> str:
 
 def dict_diff(old_dict: Dict[str, Any], new_dict: Dict[str, Any]) -> Dict[str, tuple]:
     """
-    比较两个字典的差异
+    Compare differences between two dictionaries
     
     Args:
-        old_dict: 旧字典
-        new_dict: 新字典
+        old_dict: Old dictionary
+        new_dict: New dictionary
         
     Returns:
-        差异字典 {key: (old_value, new_value)}
+        Difference dictionary {key: (old_value, new_value)}
     """
     diff = {}
     
@@ -111,23 +111,23 @@ def dict_diff(old_dict: Dict[str, Any], new_dict: Dict[str, Any]) -> Dict[str, t
 
 def get_current_timestamp() -> str:
     """
-    获取当前时间戳字符串
+    Get current timestamp string
     
     Returns:
-        时间戳字符串 (YYYY-MM-DD HH:MM:SS)
+        Timestamp string (YYYY-MM-DD HH:MM:SS)
     """
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 def is_past_date(date_str: str) -> bool:
     """
-    检查日期是否已过
+    Check if date is in the past
     
     Args:
-        date_str: 日期字符串 (YYYY-MM-DD)
+        date_str: Date string (YYYY-MM-DD)
         
     Returns:
-        是否已过
+        Whether date is in the past
     """
     try:
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -139,13 +139,13 @@ def is_past_date(date_str: str) -> bool:
 
 def is_future_date(date_str: str) -> bool:
     """
-    检查日期是否在未来
+    Check if date is in the future
     
     Args:
-        date_str: 日期字符串 (YYYY-MM-DD)
+        date_str: Date string (YYYY-MM-DD)
         
     Returns:
-        是否在未来
+        Whether date is in the future
     """
     try:
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
