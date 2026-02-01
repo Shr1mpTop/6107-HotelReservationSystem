@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ApiService, ReservationDetail } from "../lib/api";
 import Toast from "./Toast";
 import "../components/CheckInForm.css";
@@ -9,28 +9,56 @@ interface CheckInFormProps {
   onSuccess?: () => void;
 }
 
+interface PendingCheckIn {
+  reservation_id: number;
+  guest_name: string;
+  room_number: string;
+  check_in_date: string;
+  check_out_date: string;
+}
+
 export default function CheckInForm({ onSuccess }: CheckInFormProps) {
   const [reservationId, setReservationId] = useState("");
   const [reservation, setReservation] = useState<ReservationDetail | null>(
     null,
   );
+  const [pendingCheckins, setPendingCheckins] = useState<PendingCheckIn[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [loadingList, setLoadingList] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleSearch = async () => {
-    if (!reservationId || isNaN(Number(reservationId))) {
-      setError("Please enter a valid reservation ID");
-      return;
-    }
+  // Load pending check-ins on mount
+  useEffect(() => {
+    loadPendingCheckins();
+  }, []);
 
+  const loadPendingCheckins = async () => {
+    setLoadingList(true);
+    try {
+      const data = await ApiService.getTodayCheckins();
+      setPendingCheckins(data || []);
+    } catch (err) {
+      console.error("Failed to load pending check-ins:", err);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  const handleSelectReservation = (id: number) => {
+    setReservationId(id.toString());
+    // Auto-search when selecting
+    searchReservation(id);
+  };
+
+  const searchReservation = async (id: number) => {
     setSearching(true);
     setError("");
     setReservation(null);
 
     try {
-      const data = await ApiService.getReservationDetail(Number(reservationId));
+      const data = await ApiService.getReservationDetail(id);
       setReservation(data);
 
       // Validate reservation status
@@ -45,6 +73,14 @@ export default function CheckInForm({ onSuccess }: CheckInFormProps) {
     } finally {
       setSearching(false);
     }
+  };
+
+  const handleSearch = async () => {
+    if (!reservationId || isNaN(Number(reservationId))) {
+      setError("Please enter a valid reservation ID");
+      return;
+    }
+    searchReservation(Number(reservationId));
   };
 
   const handleCheckIn = async () => {
@@ -101,6 +137,42 @@ export default function CheckInForm({ onSuccess }: CheckInFormProps) {
 
       <div className="form-card">
         <h3 className="form-title">Guest Check-in</h3>
+
+        {/* Pending Check-ins List */}
+        <div className="pending-list-section">
+          <div className="pending-list-header">
+            <h4>Today's Pending Check-ins</h4>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={loadPendingCheckins}
+              disabled={loadingList}
+            >
+              {loadingList ? "Loading..." : "Refresh"}
+            </button>
+          </div>
+          {loadingList ? (
+            <p className="loading-text">Loading pending check-ins...</p>
+          ) : pendingCheckins.length === 0 ? (
+            <p className="no-data-text">No pending check-ins for today</p>
+          ) : (
+            <div className="pending-list">
+              {pendingCheckins.map((item) => (
+                <div
+                  key={item.reservation_id}
+                  className={`pending-item ${reservationId === item.reservation_id.toString() ? "selected" : ""}`}
+                  onClick={() => handleSelectReservation(item.reservation_id)}
+                >
+                  <span className="reservation-id">#{item.reservation_id}</span>
+                  <span className="guest-name">{item.guest_name}</span>
+                  <span className="room-number">Room {item.room_number}</span>
+                  <span className="dates">
+                    {item.check_in_date} - {item.check_out_date}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Search Section */}
         <div className="search-section">

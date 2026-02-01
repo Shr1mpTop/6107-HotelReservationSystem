@@ -11,7 +11,8 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
   const occupancyPercentage = stats.occupancy_rate;
   const availablePercentage = (stats.available_rooms / stats.total_rooms) * 100;
   const occupiedPercentage = (stats.occupied_rooms / stats.total_rooms) * 100;
-  const maintenancePercentage = 100 - occupancyPercentage - availablePercentage;
+  const reservedPercentage =
+    ((stats.reserved_rooms || 0) / stats.total_rooms) * 100;
 
   return (
     <div className="stats-charts-container">
@@ -37,6 +38,20 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
             <div className="card-label">Available</div>
             <div className="card-percentage">
               {availablePercentage.toFixed(1)}%
+            </div>
+          </div>
+          <div className="card-bg-decoration"></div>
+        </div>
+
+        <div className="stat-card-modern card-reserved">
+          <div className="card-icon-wrapper">
+            <div className="card-icon">📅</div>
+          </div>
+          <div className="card-content">
+            <div className="card-value">{stats.reserved_rooms || 0}</div>
+            <div className="card-label">Reserved</div>
+            <div className="card-percentage">
+              {reservedPercentage.toFixed(1)}%
             </div>
           </div>
           <div className="card-bg-decoration"></div>
@@ -120,6 +135,12 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
               </span>
             </div>
             <div className="legend-row">
+              <span className="legend-color reserved"></span>
+              <span className="legend-text">
+                Reserved: {stats.reserved_rooms || 0}
+              </span>
+            </div>
+            <div className="legend-row">
               <span className="legend-color available"></span>
               <span className="legend-text">
                 Available: {stats.available_rooms}
@@ -141,6 +162,18 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
                 style={{ width: `${availablePercentage}%` }}
               >
                 <span className="bar-value">{stats.available_rooms}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bar-item">
+            <div className="bar-label">Reserved</div>
+            <div className="bar-track">
+              <div
+                className="bar-fill bar-reserved"
+                style={{ width: `${reservedPercentage}%` }}
+              >
+                <span className="bar-value">{stats.reserved_rooms || 0}</span>
               </div>
             </div>
           </div>

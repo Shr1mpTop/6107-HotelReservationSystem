@@ -1,173 +1,114 @@
 # Hotel Reservation Management System (HRMS)
 
-A professional, enterprise-grade Hotel Reservation Management System built with modern web technologies. Features a **Next.js React frontend** and **FastAPI Python backend**, providing a complete solution for managing hotel operations with role-based access control, real-time dashboards, and comprehensive reservation management. The entire application is fully internationalized in English.
+A full-stack Hotel Reservation Management System with a **Next.js React frontend** and **FastAPI Python backend**. This system provides comprehensive hotel operations management including room booking, guest check-in/check-out, dynamic pricing, and real-time dashboard analytics.
 
-## Features
+## ✨ Features
 
-- **Modern Web Interface**:
-  - **Next.js 14 Frontend**: Professional React-based interface with TypeScript
-  - **FastAPI Backend**: High-performance Python REST API
-  - **Real-time Updates**: Live dashboard with occupancy statistics
-  - **Professional Design**: Clean, emoji-free interface for business environments
-- **Dual Access Methods**:
-  - **Web Dashboard**: Modern responsive interface accessible from any device
-  - **CLI Interface**: Command-line tools for system administration and automation
-- **Role-Based Access Control**: Secure authentication with pre-defined roles (Administrator, Front Desk, Housekeeping)
-- **Comprehensive Management**:
-  - Room and room type management with status tracking
-  - Guest information and reservation lifecycle management
-  - Dynamic seasonal pricing with automatic calculations
-  - Availability search and conflict prevention
-- **Technical Excellence**:
-  - RESTful API with OpenAPI/Swagger documentation
-  - SQLite database with efficient query optimization
-  - Session-based authentication with JWT tokens
-  - Responsive design for desktop and mobile devices
+### Core Functionality
 
-## Technology Stack
+- **Room Management**: Track room status (Clean, Occupied, Maintenance), room types, and floor layouts
+- **Reservation System**: Create, modify, search, and cancel reservations with conflict detection
+- **Check-in/Check-out**: Streamlined guest arrival and departure processing with payment handling
+- **Dynamic Pricing**: Seasonal pricing rules with automatic price calculations
+- **Dashboard Analytics**: Real-time occupancy rates, revenue statistics, and operational metrics
 
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Backend**: Python 3.8+, FastAPI, Uvicorn
-- **Database**: SQLite 3
-- **Database**: SQLite 3
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Core Libraries**:
-  - `bcrypt`: For hashing user passwords.
-  - `colorama`: To create a colorful and user-friendly CLI.
-  - `tabulate`: To display data in well-formatted tables.
-  - `uvicorn`: ASGI server for serving the FastAPI application.
-  - `jinja2`: Template engine for HTML rendering.
+### Technical Features
 
-## Project Structure
+- **Role-Based Access Control**: Three user roles (Admin, Front Desk, Housekeeping)
+- **RESTful API**: Comprehensive API with Swagger/OpenAPI documentation
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Type-Safe Frontend**: Built with TypeScript for reliability
+
+## 🛠 Technology Stack
+
+| Layer    | Technology                       |
+| -------- | -------------------------------- |
+| Frontend | Next.js 16, React 19, TypeScript |
+| Backend  | Python 3.8+, FastAPI, Uvicorn    |
+| Database | SQLite 3                         |
+| Styling  | CSS3 with CSS Variables          |
+
+## 📁 Project Structure
 
 ```
-/
-├── data/                 # SQLite database (auto-generated)
-├── src/                  # Python backend source code
-│   ├── database/         # Database connection, schema, initialization
-│   ├── services/         # Business logic (auth, rooms, reservations, etc.)
-│   ├── ui/               # CLI interface components
-│   └── utils/            # Helper functions and validators
-├── frontend/             # Next.js React frontend
-│   ├── app/              # Next.js 14 app directory
-│   │   ├── components/   # React components
-│   │   ├── lib/          # API client and utilities
-│   │   ├── login/        # Login page
-│   │   └── dashboard/    # Main dashboard page
-│   ├── package.json      # Node.js dependencies
-│   └── next.config.js    # Next.js configuration
-├── app.py                # FastAPI backend server
-├── requirements.txt      # Python dependencies
-├── start.bat/sh          # Full stack startup (recommended)
-├── run_backend.bat/sh    # Backend API server only
-├── run_frontend.bat/sh   # Frontend dev server only
-└── run.bat/sh            # CLI interface
+HotelReservationSystem/
+├── frontend/                 # Next.js React frontend
+│   ├── app/
+│   │   ├── components/       # Reusable React components
+│   │   ├── lib/              # API client and utilities
+│   │   ├── login/            # Login page
+│   │   └── dashboard/        # Main dashboard
+│   ├── package.json
+│   └── next.config.js
+├── src/                      # Python backend modules
+│   ├── database/             # Database schema and manager
+│   ├── services/             # Business logic services
+│   ├── ui/                   # CLI interface (optional)
+│   └── utils/                # Helper functions
+├── data/                     # SQLite database (auto-generated)
+├── app.py                    # FastAPI backend server
+├── requirements.txt          # Python dependencies
+├── start.bat / start.sh      # Quick start scripts
+├── blackbox_test.py          # Black-box test suite
+└── whitebox_test.py          # White-box test suite
 ```
 
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Python 3.8+** (for backend)
-- **Node.js 18+** (for Next.js frontend)
-- **npm or yarn** (Node package manager)
+- **Python 3.8+**
+- **Node.js 18+**
+- **npm** (comes with Node.js)
 
-### Installation & Setup
+### Installation
 
-1.  **Clone the repository:**
+1. **Clone the repository**
 
-    ```bash
-    git clone https://github.com/Shr1mpTop/6107-HotelReservationSystem.git
-    cd 6107-HotelReservationSystem
-    ```
+   ```bash
+   git clone https://github.com/Shr1mpTop/6107-HotelReservationSystem.git
+   cd 6107-HotelReservationSystem
+   ```
 
-2.  **Quick Start (Recommended) - Start Everything:**
+2. **Start the application**
 
-    Run the all-in-one startup script that launches both backend and frontend:
-    - **On Windows:**
-      ```bat
-      start.bat
-      ```
-    - **On Linux or macOS:**
-      ```bash
-      chmod +x start.sh
-      ./start.sh
-      ```
+   **Windows:**
 
-    This will automatically:
-    - Start the FastAPI backend API on `http://localhost:8000`
-    - Start the Next.js frontend on `http://localhost:3000`
-    - Open API documentation at `http://localhost:8000/docs`
+   ```bat
+   start.bat
+   ```
 
-3.  **Manual Start (Advanced):**
+   **Linux/macOS:**
 
-    If you prefer to start services separately:
+   ```bash
+   chmod +x start.sh
+   ./start.sh
+   ```
 
-    **Backend API Server:**
+   This will automatically:
+   - Install Python dependencies
+   - Install Node.js dependencies
+   - Initialize the database with sample data
+   - Start the backend API server (http://localhost:8000)
+   - Start the frontend dev server (http://localhost:3000)
 
-    ```bash
-    # Windows
-    run_backend.bat
+3. **Open your browser** and navigate to: **http://localhost:3000**
 
-    # Linux/macOS
-    ./run_backend.sh
-    ```
+### Manual Start (Advanced)
 
-    **Next.js Frontend:**
+If you prefer to start services separately:
 
-    ```bash
-    # Windows
-    run_frontend.bat
+```bash
+# Terminal 1: Start backend
+run_backend.bat    # Windows
+./run_backend.sh   # Linux/macOS
 
-    # Linux/macOS
-    ./run_frontend.sh
-    ```
+# Terminal 2: Start frontend
+run_frontend.bat   # Windows
+./run_frontend.sh  # Linux/macOS
+```
 
-    **CLI Interface (Optional):**
-
-    ```bash
-    # Windows
-    run.bat
-
-    # Linux/macOS
-    ./run.sh
-    ```
-
-All startup scripts will automatically:
-
-- Check for required dependencies (Python 3.8+, Node.js 18+)
-- Install necessary packages from `requirements.txt` (Python) or `package.json` (Node.js)
-- Create the `data/` directory if it doesn't exist
-- Initialize the `hrms.db` database with tables and default data on the first run
-
-## How to Use
-
-### Next.js Web Interface (Recommended)
-
-1. **Start the system** using `start.bat` or `start.sh` (easiest way)
-   - Or manually start backend (`run_backend`) and frontend (`run_frontend`) separately
-2. **Open your browser** and navigate to: `http://localhost:3000`
-3. **Login** with one of the demo accounts (see credentials below)
-
-The Next.js interface provides:
-
-- **Professional Dashboard**: Clean, business-focused design without emojis
-- **Real-time Statistics**: Live occupancy rates and room status updates
-- **Intuitive Navigation**: Easy-to-use sidebar menu system
-- **Responsive Layout**: Works on desktop, tablet, and mobile devices
-- **Type-safe Development**: Built with TypeScript for reliability
-
-### Legacy HTML Interface
-
-For the original HTML/JavaScript interface, start only the backend and navigate to: `http://localhost:8000`
-
-### CLI Interface
-
-Run the CLI startup scripts for command-line access with full system functionality.
-
-### Login Credentials
-
-### Default User Accounts
+## 👤 Default Login Credentials
 
 | Role          | Username       | Password   |
 | ------------- | -------------- | ---------- |
@@ -175,47 +116,113 @@ Run the CLI startup scripts for command-line access with full system functionali
 | Front Desk    | `frontdesk`    | `front123` |
 | Housekeeping  | `housekeeping` | `house123` |
 
-## Testing
+## 📖 User Guide
 
-To ensure the system is functioning correctly, you can run the automated test script. This script verifies the database connection, authentication, and core service functionalities.
+### Dashboard
+
+The main dashboard displays:
+
+- **Room Statistics**: Total, available, reserved, and occupied rooms
+- **Occupancy Rate**: Visual chart showing current occupancy
+- **Hotel Map**: Interactive floor-by-floor room layout with status colors
+- **Quick Actions**: Fast access to common operations
+
+### Room Management
+
+- View all rooms organized by floor
+- Update room status (Clean → Occupied → Maintenance)
+- Manage room types and base pricing
+- Configure seasonal pricing rules
+
+### Reservations
+
+- **New Reservation**: Search available rooms by date range, select room, enter guest details
+- **All Reservations**: View, search, modify, or cancel existing reservations
+- **Check-in**: View pending arrivals, select reservation, confirm check-in
+- **Check-out**: View current guests, process payment, complete check-out
+
+### Reports (Admin Only)
+
+- Occupancy reports by date range
+- Revenue analytics
+- Database backup and restore
+
+## 🧪 Testing
+
+Run the automated test suites:
 
 ```bash
+# Black-box tests (16 test cases)
+python blackbox_test.py
+
+# White-box tests (37 test cases)
+python whitebox_test.py
+
+# Quick system verification
 python test_system.py
 ```
 
-You should see a summary indicating that all tests have passed.
+## 📡 API Documentation
 
-## API Documentation
-
-The web interface is powered by a comprehensive REST API. When the web server is running, you can access the interactive API documentation at:
+When the backend is running, access interactive API documentation:
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
 ### Key API Endpoints
 
-- `POST /api/auth/login` - User authentication
-- `GET /api/rooms` - Get all rooms
-- `GET /api/rooms/available` - Get available rooms for date range
-- `PUT /api/rooms/{room_id}/status` - Update room status
-- `GET /api/reservations` - Get all reservations
-- `POST /api/reservations` - Create new reservation
-- `DELETE /api/reservations/{reservation_id}` - Cancel reservation
-- `GET /api/dashboard/stats` - Get dashboard statistics
+| Endpoint                           | Method   | Description                        |
+| ---------------------------------- | -------- | ---------------------------------- |
+| `/api/auth/login`                  | POST     | User authentication                |
+| `/api/dashboard/stats`             | GET      | Dashboard statistics               |
+| `/api/rooms`                       | GET      | List all rooms                     |
+| `/api/rooms/available`             | GET      | Get available rooms for date range |
+| `/api/reservations`                | GET/POST | List/create reservations           |
+| `/api/reservations/{id}/check-in`  | POST     | Process guest check-in             |
+| `/api/reservations/{id}/check-out` | POST     | Process guest check-out            |
+| `/api/pricing/calculate`           | GET      | Calculate reservation price        |
 
-## Features Comparison
+## ⚙️ Configuration
 
-| Feature                | Web Interface | CLI Interface |
-| ---------------------- | ------------- | ------------- |
-| User Authentication    | ✅            | ✅            |
-| Room Management        | ✅            | ✅            |
-| Reservation Management | ✅            | ✅            |
-| Real-time Dashboard    | ✅            | ❌            |
-| Visual Interface       | ✅            | ❌            |
-| Mobile Support         | ✅            | ❌            |
-| API Access             | ✅            | ❌            |
-| System Reports         | ❌            | ✅            |
+### Environment Variables
 
----
+Copy `.env.example` to `.env` and configure:
 
-This project serves as a practical example of building a robust, modular, and user-friendly application in Python with both web and command-line interfaces.
+```env
+# Backend settings
+DATABASE_PATH=data/hrms.db
+SECRET_KEY=your-secret-key
+
+# Frontend settings (in frontend/.env.local)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+## 🔧 Development
+
+### Backend Development
+
+```bash
+cd 6107-HotelReservationSystem
+pip install -r requirements.txt
+python app.py
+```
+
+### Frontend Development
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## 📝 License
+
+This project is for educational purposes as part of COMP6107 coursework.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request

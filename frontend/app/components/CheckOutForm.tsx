@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ApiService, ReservationDetail } from "../lib/api";
 import Toast from "./Toast";
 import "../components/CheckOutForm.css";
@@ -9,15 +9,26 @@ interface CheckOutFormProps {
   onSuccess?: () => void;
 }
 
+interface CurrentGuest {
+  reservation_id: number;
+  guest_name: string;
+  room_number: string;
+  check_in_date: string;
+  check_out_date: string;
+  total_price: number;
+}
+
 export default function CheckOutForm({ onSuccess }: CheckOutFormProps) {
   const [reservationId, setReservationId] = useState("");
   const [reservation, setReservation] = useState<ReservationDetail | null>(
     null,
   );
+  const [currentGuests, setCurrentGuests] = useState<CurrentGuest[]>([]);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [loadingList, setLoadingList] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -28,18 +39,36 @@ export default function CheckOutForm({ onSuccess }: CheckOutFormProps) {
     { value: "OnlineTransfer", label: "Online Transfer" },
   ];
 
-  const handleSearch = async () => {
-    if (!reservationId || isNaN(Number(reservationId))) {
-      setError("Please enter a valid reservation ID");
-      return;
-    }
+  // Load current guests on mount
+  useEffect(() => {
+    loadCurrentGuests();
+  }, []);
 
+  const loadCurrentGuests = async () => {
+    setLoadingList(true);
+    try {
+      const data = await ApiService.getCurrentGuests();
+      setCurrentGuests(data || []);
+    } catch (err) {
+      console.error("Failed to load current guests:", err);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  const handleSelectReservation = (guest: CurrentGuest) => {
+    setReservationId(guest.reservation_id.toString());
+    // Auto-search when selecting
+    searchReservation(guest.reservation_id);
+  };
+
+  const searchReservation = async (id: number) => {
     setSearching(true);
     setError("");
     setReservation(null);
 
     try {
-      const data = await ApiService.getReservationDetail(Number(reservationId));
+      const data = await ApiService.getReservationDetail(id);
       setReservation(data);
       setPaymentAmount(data.total_price.toString());
 
@@ -54,6 +83,14 @@ export default function CheckOutForm({ onSuccess }: CheckOutFormProps) {
     } finally {
       setSearching(false);
     }
+  };
+
+  const handleSearch = async () => {
+    if (!reservationId || isNaN(Number(reservationId))) {
+      setError("Please enter a valid reservation ID");
+      return;
+    }
+    searchReservation(Number(reservationId));
   };
 
   const handleCheckOut = async () => {
@@ -131,6 +168,42 @@ export default function CheckOutForm({ onSuccess }: CheckOutFormProps) {
 
       <div className="form-card">
         <h3 className="form-title">Guest Check-out</h3>
+
+        {/* Current Guests List */}
+        <div className="pending-list-section">
+          <div className="pending-list-header">
+            <h4>Current Guests (Checked In)</h4>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={loadCurrentGuests}
+              disabled={loadingList}
+            >
+              {loadingList ? "Loading..." : "Refresh"}
+            </button>
+          </div>
+          {loadingList ? (
+            <p className="loading-text">Loading current guests...</p>
+          ) : currentGuests.length === 0 ? (
+            <p className="no-data-text">No guests currently checked in</p>
+          ) : (
+            <div className="pending-list">
+              {currentGuests.map((guest) => (
+                <div
+                  key={guest.reservation_id}
+                  className={`pending-item ${reservationId === guest.reservation_id.toString() ? "selected" : ""}`}
+                  onClick={() => handleSelectReservation(guest)}
+                >
+                  <span className="reservation-id">
+                    #{guest.reservation_id}
+                  </span>
+                  <span className="guest-name">{guest.guest_name}</span>
+                  <span className="room-number">Room {guest.room_number}</span>
+                  <span className="price">${guest.total_price.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Search Section */}
         <div className="search-section">

@@ -408,7 +408,15 @@ export default function DashboardPage() {
           {activeSection === "room-types" && user?.role === "admin" && (
             <div>
               <h2 className="section-header">Room Type & Pricing Management</h2>
-              <RoomManagement />
+              <RoomManagement defaultTab="room-types" />
+            </div>
+          )}
+
+          {/* Seasonal Pricing Section */}
+          {activeSection === "pricing" && user?.role === "admin" && (
+            <div>
+              <h2 className="section-header">Seasonal Pricing Management</h2>
+              <RoomManagement defaultTab="seasonal-pricing" />
             </div>
           )}
 

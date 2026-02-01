@@ -44,6 +44,9 @@
 .stat-card-modern:nth-child(4) {
   animation-delay: 0.4s;
 }
+.stat-card-modern:nth-child(5) {
+  animation-delay: 0.5s;
+}
 
 @keyframes slideInCard {
   from {
@@ -83,11 +86,14 @@
 .card-available .card-bg-decoration {
   background: linear-gradient(135deg, #10b981, #059669);
 }
+.card-reserved .card-bg-decoration {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
 .card-occupied .card-bg-decoration {
   background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 .card-occupancy .card-bg-decoration {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
 }
 
 .card-icon-wrapper {
@@ -111,11 +117,14 @@
 .card-available .card-icon-wrapper {
   background: linear-gradient(135deg, #10b981, #059669);
 }
+.card-reserved .card-icon-wrapper {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
 .card-occupied .card-icon-wrapper {
   background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 .card-occupancy .card-icon-wrapper {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
 }
 
 .card-icon {
@@ -264,6 +273,10 @@
   background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
+.legend-color.reserved {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
 .legend-color.available {
   background: linear-gradient(135deg, #10b981, #059669);
 }
@@ -343,6 +356,11 @@
 .bar-available {
   background: linear-gradient(90deg, #10b981, #059669);
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.bar-reserved {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
 }
 
 .bar-occupied {

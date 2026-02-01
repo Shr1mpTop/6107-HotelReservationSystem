@@ -27,6 +27,7 @@ wheels/
 venv/
 ENV/
 env/
+.venv/
 
 # IDE
 .vscode/
@@ -44,6 +45,7 @@ backups/
 
 # 环境配置
 .env
+.env.local
 
 # CSV导出文件
 *.csv
@@ -51,3 +53,18 @@ backups/
 # 操作系统
 .DS_Store
 Thumbs.db
+
+# Test outputs
+test_results.json
+whitebox_test_results.json
+*_test_results.json
+
+# Node.js
+node_modules/
+.next/
+.npm/
+npm-debug.log*
+
+# Build outputs
+out/
+build/

@@ -212,6 +212,99 @@
   }
 }
 
+/* Pending Check-ins List */
+.pending-list-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.pending-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.pending-list-header h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  margin: 0;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.loading-text,
+.no-data-text {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.pending-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.pending-item:hover {
+  background: #e9ecef;
+  border-color: var(--primary-color);
+}
+
+.pending-item.selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.pending-item.selected .reservation-id,
+.pending-item.selected .guest-name,
+.pending-item.selected .room-number,
+.pending-item.selected .dates {
+  color: white;
+}
+
+.pending-item .reservation-id {
+  font-weight: 700;
+  color: var(--primary-color);
+  min-width: 50px;
+}
+
+.pending-item .guest-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.pending-item .room-number {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.pending-item .dates {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .form-card {
@@ -228,5 +321,14 @@
 
   .btn-large {
     width: 100%;
+  }
+
+  .pending-item {
+    flex-wrap: wrap;
+  }
+
+  .pending-item .dates {
+    width: 100%;
+    margin-top: 0.25rem;
   }
 }

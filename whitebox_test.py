@@ -507,26 +507,32 @@ class TestEmailService(unittest.TestCase):
 class TestReportService(unittest.TestCase):
     """WB-REPORT: Report Service White Box Tests"""
     
-    def test_get_occupancy_report(self):
-        """WB-REPORT-001: Get Occupancy Report"""
+    def test_generate_occupancy_report(self):
+        """WB-REPORT-001: Generate Occupancy Report"""
         from services.report_service import ReportService
         
-        today = datetime.now().strftime('%Y-%m-%d')
+        # Use date range (start_date must be before end_date)
+        start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        end_date = datetime.now().strftime('%Y-%m-%d')
         
-        report = ReportService.get_occupancy_report(today, today)
+        report = ReportService.generate_occupancy_report(start_date, end_date)
         
         self.assertIsInstance(report, dict)
         self.assertIn('total_rooms', report)
-        self.assertIn('occupied_rooms', report)
+        self.assertIn('daily_data', report)
+        self.assertIn('average_occupancy_rate', report)
+        # Verify daily_data structure
+        if report['daily_data']:
+            self.assertIn('occupied_rooms', report['daily_data'][0])
     
-    def test_get_revenue_report(self):
-        """WB-REPORT-002: Get Revenue Report"""
+    def test_generate_revenue_report(self):
+        """WB-REPORT-002: Generate Revenue Report"""
         from services.report_service import ReportService
         
         start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
         end_date = datetime.now().strftime('%Y-%m-%d')
         
-        report = ReportService.get_revenue_report(start_date, end_date)
+        report = ReportService.generate_revenue_report(start_date, end_date)
         
         self.assertIsInstance(report, dict)
         self.assertIn('total_revenue', report)

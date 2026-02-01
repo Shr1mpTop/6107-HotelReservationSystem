@@ -31,14 +31,33 @@ export default function ReservationSearch({ onEdit }: ReservationSearchProps) {
   const [success, setSuccess] = useState("");
   const [showModal, setShowModal] = useState(false);
 
+  // Load all reservations on mount
+  useEffect(() => {
+    loadAllReservations();
+  }, []);
+
+  const loadAllReservations = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await ApiService.getReservations();
+      setReservations(data);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to load reservations");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearch = async () => {
     // Check if at least one search criterion is provided
     const hasSearchCriteria = Object.values(searchCriteria).some(
       (value) => value.trim() !== "",
     );
 
+    // If no criteria, load all reservations
     if (!hasSearchCriteria) {
-      setError("Please enter at least one search criterion");
+      loadAllReservations();
       return;
     }
 
@@ -122,7 +141,7 @@ export default function ReservationSearch({ onEdit }: ReservationSearchProps) {
         setSuccess("Reservation updated successfully!");
         setEditing(false);
         setShowModal(false);
-        handleSearch(); // Refresh results
+        loadAllReservations(); // Refresh all reservations
       } else {
         setError(result.message || "Failed to update reservation");
       }
@@ -146,7 +165,7 @@ export default function ReservationSearch({ onEdit }: ReservationSearchProps) {
       if (result.success) {
         setSuccess("Reservation cancelled successfully!");
         setShowModal(false);
-        handleSearch(); // Refresh results
+        loadAllReservations(); // Refresh all reservations
       } else {
         setError(result.message || "Failed to cancel reservation");
       }
@@ -259,17 +278,18 @@ export default function ReservationSearch({ onEdit }: ReservationSearchProps) {
               {loading ? "Searching..." : "Search"}
             </button>
             <button
-              onClick={() =>
+              onClick={() => {
                 setSearchCriteria({
                   guest_name: "",
                   phone: "",
                   reservation_id: "",
                   room_number: "",
-                })
-              }
+                });
+                loadAllReservations();
+              }}
               className="btn btn-secondary"
             >
-              Clear
+              Show All
             </button>
           </div>
         </div>

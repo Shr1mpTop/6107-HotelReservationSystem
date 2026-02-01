@@ -353,12 +353,32 @@ async def get_dashboard_stats(current_user: UserInfo = Depends(get_current_user)
         room_stats = RoomService.get_room_statistics()
         total_rooms = room_stats.get('total_rooms', 0)
         occupied_rooms = room_stats.get('occupied_rooms', 0)
-        available_rooms = total_rooms - occupied_rooms
+        
+        # Get rooms with active reservations (Confirmed status, overlapping with today)
+        reserved_query = """
+            SELECT COUNT(DISTINCT room_id) as count FROM reservations 
+            WHERE status = 'Confirmed'
+                AND check_in_date <= ?
+                AND check_out_date > ?
+        """
+        reserved_result = db_manager.execute_query(reserved_query, (today, today))
+        reserved_rooms = reserved_result[0]['count'] if reserved_result else 0
+        
+        # Available = Total - Occupied - Reserved (but not yet checked in)
+        available_rooms = total_rooms - occupied_rooms - reserved_rooms
         
         # Get total reservations count
         reservations_query = "SELECT COUNT(*) as count FROM reservations"
         reservations_result = db_manager.execute_query(reservations_query)
         total_reservations = reservations_result[0]['count'] if reservations_result else 0
+        
+        # Get active reservations (Confirmed or CheckedIn)
+        active_query = """
+            SELECT COUNT(*) as count FROM reservations 
+            WHERE status IN ('Confirmed', 'CheckedIn')
+        """
+        active_result = db_manager.execute_query(active_query)
+        active_reservations = active_result[0]['count'] if active_result else 0
         
         # Get today's check-ins
         checkins_query = """
@@ -368,15 +388,20 @@ async def get_dashboard_stats(current_user: UserInfo = Depends(get_current_user)
         checkins_result = db_manager.execute_query(checkins_query, (today,))
         today_checkins = checkins_result[0]['count'] if checkins_result else 0
         
+        # Calculate occupancy including reserved rooms
+        total_used = occupied_rooms + reserved_rooms
+        
         return {
             "success": True,
             "stats": {
                 "total_rooms": total_rooms,
                 "occupied_rooms": occupied_rooms,
+                "reserved_rooms": reserved_rooms,
                 "available_rooms": available_rooms,
                 "total_reservations": total_reservations,
+                "active_reservations": active_reservations,
                 "today_checkins": today_checkins,
-                "occupancy_rate": round((occupied_rooms / total_rooms * 100), 2) if total_rooms > 0 else 0
+                "occupancy_rate": round((total_used / total_rooms * 100), 2) if total_rooms > 0 else 0
             }
         }
     except Exception as e:
@@ -398,6 +423,52 @@ async def search_reservations(
             room_number=search_data.room_number
         )
         return {"success": True, "data": reservations}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/reservations/today-checkins")
+async def get_today_checkins(
+    current_user: UserInfo = Depends(get_current_user)
+):
+    """Get list of reservations scheduled for check-in today (status = Confirmed)"""
+    try:
+        today = datetime.now().strftime('%Y-%m-%d')
+        query = """
+            SELECT r.reservation_id, 
+                   g.first_name || ' ' || g.last_name as guest_name,
+                   rm.room_number,
+                   r.check_in_date, r.check_out_date
+            FROM reservations r
+            JOIN rooms rm ON r.room_id = rm.room_id
+            JOIN guests g ON r.guest_id = g.guest_id
+            WHERE r.status = 'Confirmed'
+            AND r.check_in_date <= ?
+            ORDER BY r.check_in_date ASC
+        """
+        result = db_manager.execute_query(query, (today,))
+        return {"success": True, "data": result if result else []}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/reservations/current-guests")
+async def get_current_guests(
+    current_user: UserInfo = Depends(get_current_user)
+):
+    """Get list of reservations with checked-in guests (status = CheckedIn)"""
+    try:
+        query = """
+            SELECT r.reservation_id, 
+                   g.first_name || ' ' || g.last_name as guest_name,
+                   rm.room_number,
+                   r.check_in_date, r.check_out_date, r.total_price
+            FROM reservations r
+            JOIN rooms rm ON r.room_id = rm.room_id
+            JOIN guests g ON r.guest_id = g.guest_id
+            WHERE r.status = 'CheckedIn'
+            ORDER BY r.check_out_date ASC
+        """
+        result = db_manager.execute_query(query)
+        return {"success": True, "data": result if result else []}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

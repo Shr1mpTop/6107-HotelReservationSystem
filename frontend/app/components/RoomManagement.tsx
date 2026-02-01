@@ -5,9 +5,15 @@ import { ApiService, RoomType, SeasonalPricing } from "../lib/api";
 import Toast from "./Toast";
 import "../components/RoomManagement.css";
 
-export default function RoomManagement() {
+interface RoomManagementProps {
+  defaultTab?: "room-types" | "seasonal-pricing";
+}
+
+export default function RoomManagement({
+  defaultTab = "room-types",
+}: RoomManagementProps) {
   const [activeTab, setActiveTab] = useState<"room-types" | "seasonal-pricing">(
-    "room-types",
+    defaultTab,
   );
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [seasonalPricing, setSeasonalPricing] = useState<SeasonalPricing[]>([]);
