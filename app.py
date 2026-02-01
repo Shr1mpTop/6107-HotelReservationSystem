@@ -346,15 +346,27 @@ async def calculate_price(
 async def get_dashboard_stats(current_user: UserInfo = Depends(get_current_user)):
     """Get dashboard statistics"""
     try:
+        from datetime import datetime
+        today = datetime.now().strftime('%Y-%m-%d')
+        
         # Get basic statistics using room statistics method
         room_stats = RoomService.get_room_statistics()
         total_rooms = room_stats.get('total_rooms', 0)
         occupied_rooms = room_stats.get('occupied_rooms', 0)
         available_rooms = total_rooms - occupied_rooms
+        
         # Get total reservations count
         reservations_query = "SELECT COUNT(*) as count FROM reservations"
         reservations_result = db_manager.execute_query(reservations_query)
         total_reservations = reservations_result[0]['count'] if reservations_result else 0
+        
+        # Get today's check-ins
+        checkins_query = """
+            SELECT COUNT(*) as count FROM reservations 
+            WHERE check_in_date = ? AND status IN ('Confirmed', 'CheckedIn')
+        """
+        checkins_result = db_manager.execute_query(checkins_query, (today,))
+        today_checkins = checkins_result[0]['count'] if checkins_result else 0
         
         return {
             "success": True,
@@ -363,6 +375,7 @@ async def get_dashboard_stats(current_user: UserInfo = Depends(get_current_user)
                 "occupied_rooms": occupied_rooms,
                 "available_rooms": available_rooms,
                 "total_reservations": total_reservations,
+                "today_checkins": today_checkins,
                 "occupancy_rate": round((occupied_rooms / total_rooms * 100), 2) if total_rooms > 0 else 0
             }
         }
@@ -773,33 +786,6 @@ async def change_password(
             return {"success": True, "message": message}
         else:
             return {"success": False, "message": message}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/dashboard/stats")
-async def get_dashboard_stats(current_user: UserInfo = Depends(get_current_user)):
-    """Get dashboard statistics"""
-    try:
-        # Get basic statistics using room statistics method
-        room_stats = RoomService.get_room_statistics()
-        total_rooms = room_stats.get('total_rooms', 0)
-        occupied_rooms = room_stats.get('occupied_rooms', 0)
-        available_rooms = total_rooms - occupied_rooms
-        # Get total reservations count
-        reservations_query = "SELECT COUNT(*) as count FROM reservations"
-        reservations_result = db_manager.execute_query(reservations_query)
-        total_reservations = reservations_result[0]['count'] if reservations_result else 0
-        
-        return {
-            "success": True,
-            "stats": {
-                "total_rooms": total_rooms,
-                "occupied_rooms": occupied_rooms,
-                "available_rooms": available_rooms,
-                "total_reservations": total_reservations,
-                "occupancy_rate": round((occupied_rooms / total_rooms * 100), 2) if total_rooms > 0 else 0
-            }
-        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

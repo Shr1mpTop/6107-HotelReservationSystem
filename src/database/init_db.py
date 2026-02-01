@@ -41,6 +41,7 @@ def insert_initial_users():
     
     users = [
         ('admin', hash_password('admin123'), 'System Administrator', 'admin@hotel.com', '1234567890', 'admin'),
+        ('receptionist', hash_password('receptionist123'), 'Receptionist', 'receptionist@hotel.com', '1234567894', 'front_desk'),
         ('frontdesk', hash_password('front123'), 'Front Desk Staff', 'front@hotel.com', '1234567891', 'front_desk'),
         ('housekeeping', hash_password('house123'), 'Housekeeping Staff', 'house@hotel.com', '1234567892', 'housekeeping'),
     ]

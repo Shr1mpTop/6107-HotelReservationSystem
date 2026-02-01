@@ -1,35 +1,55 @@
 {
-  "timestamp": "2026-02-01T17:23:10.374856",
+  "timestamp": "2026-02-01T17:37:17.797359",
   "summary": {
-    "total": 13,
-    "passed": 10,
-    "failed": 3,
-    "pass_rate": 76.92307692307693
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "pass_rate": 100.0
   },
   "passed_tests": [
     {
       "id": "TC-AUTH-001",
-      "description": "管理员成功登录"
+      "description": "Admin login successful"
     },
     {
       "id": "TC-AUTH-005",
-      "description": "成功登出"
+      "description": "Logout successful"
+    },
+    {
+      "id": "TC-AUTH-002",
+      "description": "Receptionist login successful"
     },
     {
       "id": "TC-AUTH-003",
-      "description": "错误密码正确拒绝"
+      "description": "Wrong password correctly rejected"
     },
     {
       "id": "TC-AUTH-004",
-      "description": "不存在的用户正确拒绝"
+      "description": "Non-existent user correctly rejected"
+    },
+    {
+      "id": "TC-DASH-001",
+      "description": "Dashboard statistics data complete"
+    },
+    {
+      "id": "TC-MAP-001",
+      "description": "Successfully loaded 25 rooms"
+    },
+    {
+      "id": "TC-MAP-002",
+      "description": "All rooms have status field"
+    },
+    {
+      "id": "TC-MAP-004",
+      "description": "Rooms contain reservation info fields"
     },
     {
       "id": "TC-RES-001",
-      "description": "找到24个可用房间"
+      "description": "找到21个可用房间"
     },
     {
       "id": "TC-RES-010",
-      "description": "成功创建预订 #3"
+      "description": "成功创建预订 #7"
     },
     {
       "id": "TC-RES-002",
@@ -37,55 +57,21 @@
     },
     {
       "id": "TC-SEARCH-001",
-      "description": "成功按ID搜索到预订 #3"
+      "description": "成功按ID搜索到预订 #7"
     },
     {
       "id": "TC-SEARCH-002",
       "description": "姓名搜索功能正常"
     },
     {
+      "id": "TC-PERM-001",
+      "description": "报表访问被拒绝 (HTTP 500)"
+    },
+    {
       "id": "TC-SETTINGS-002",
       "description": "正确拒绝错误的当前密码"
     }
   ],
-  "failed_tests": [
-    {
-      "id": "TC-AUTH-002",
-      "description": "前台员工登录失败",
-      "error": "登录接口返回失败"
-    },
-    {
-      "id": "TC-DASH-001",
-      "description": "Dashboard统计数据不完整",
-      "error": "缺少必要字段，实际数据: dict_keys(['total_rooms', 'occupied_rooms', 'available_rooms', 'total_reservations', 'occupancy_rate'])"
-    },
-    {
-      "id": "TC-MAP-001",
-      "description": "房间数据获取失败",
-      "error": "HTTP 404"
-    }
-  ],
-  "issues": [
-    {
-      "test_id": "TC-AUTH-002",
-      "severity": "HIGH",
-      "description": "前台员工登录失败",
-      "error": "登录接口返回失败",
-      "timestamp": "2026-02-01T17:23:09.293071"
-    },
-    {
-      "test_id": "TC-DASH-001",
-      "severity": "HIGH",
-      "description": "Dashboard统计数据不完整",
-      "error": "缺少必要字段，实际数据: dict_keys(['total_rooms', 'occupied_rooms', 'available_rooms', 'total_reservations', 'occupancy_rate'])",
-      "timestamp": "2026-02-01T17:23:09.806444"
-    },
-    {
-      "test_id": "TC-MAP-001",
-      "severity": "HIGH",
-      "description": "房间数据获取失败",
-      "error": "HTTP 404",
-      "timestamp": "2026-02-01T17:23:09.809290"
-    }
-  ]
+  "failed_tests": [],
+  "issues": []
 }
