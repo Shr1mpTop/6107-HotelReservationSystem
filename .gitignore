@@ -13,7 +13,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -23,6 +22,7 @@ wheels/
 .installed.cfg
 *.egg
 
+# Python lib directories (exclude frontend lib)
 # 虚拟环境
 venv/
 ENV/
