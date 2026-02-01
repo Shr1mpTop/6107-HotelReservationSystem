@@ -134,6 +134,7 @@ A professional, enterprise-grade Hotel Reservation Management System built with 
     ```
 
 All startup scripts will automatically:
+
 - Check for required dependencies (Python 3.8+, Node.js 18+)
 - Install necessary packages from `requirements.txt` (Python) or `package.json` (Node.js)
 - Create the `data/` directory if it doesn't exist
