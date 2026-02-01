@@ -1,4 +1,4 @@
-"""辅助函数模块"""
+"""Helper functions module"""
 
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
@@ -6,14 +6,14 @@ from typing import List, Dict, Any
 
 def calculate_nights(check_in: str, check_out: str) -> int:
     """
-    计算住宿晚数
+    Calculate number of nights for stay
     
     Args:
-        check_in: 入住日期 (YYYY-MM-DD)
-        check_out: 退房日期 (YYYY-MM-DD)
+        check_in: Check-in date (YYYY-MM-DD)
+        check_out: Check-out date (YYYY-MM-DD)
         
     Returns:
-        晚数
+        Number of nights
     """
     try:
         check_in_date = datetime.strptime(check_in, '%Y-%m-%d')
