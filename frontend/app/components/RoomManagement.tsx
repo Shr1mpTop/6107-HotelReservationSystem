@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ApiService, RoomType, SeasonalPricing, formatDate } from "../lib/api";
+import { ApiService, RoomType, SeasonalPricing, Room, formatDate } from "../lib/api";
 import Toast from "./Toast";
 import "../components/RoomManagement.css";
 
 interface RoomManagementProps {
-  defaultTab?: "room-types" | "seasonal-pricing";
+  defaultTab?: "rooms" | "room-types" | "seasonal-pricing";
 }
 
 export default function RoomManagement({
   defaultTab = "room-types",
 }: RoomManagementProps) {
-  const [activeTab, setActiveTab] = useState<"room-types" | "seasonal-pricing">(
+  const [activeTab, setActiveTab] = useState<"rooms" | "room-types" | "seasonal-pricing">(
     defaultTab,
   );
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [seasonalPricing, setSeasonalPricing] = useState<SeasonalPricing[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,12 +46,27 @@ export default function RoomManagement({
   });
 
   useEffect(() => {
-    if (activeTab === "room-types") {
+    if (activeTab === "rooms") {
+      loadRooms();
+      loadRoomTypes(); // Also load room types for filter
+    } else if (activeTab === "room-types") {
       loadRoomTypes();
     } else {
       loadSeasonalPricing();
     }
   }, [activeTab]);
+
+  const loadRooms = async () => {
+    setLoading(true);
+    try {
+      const data = await ApiService.getRoomsWithReservations();
+      setRooms(data);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to load rooms");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadRoomTypes = async () => {
     setLoading(true);
@@ -71,6 +87,29 @@ export default function RoomManagement({
       setSeasonalPricing(data);
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to load seasonal pricing");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateRoomStatus = async (roomId: number, newStatus: string) => {
+    if (!confirm(`Are you sure you want to change room status to ${newStatus}?`)) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await ApiService.updateRoomStatus(roomId, newStatus);
+      if (result.success) {
+        setSuccess(`Room status updated to ${newStatus}`);
+        loadRooms();
+      } else {
+        setError(result.message);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to update room status");
     } finally {
       setLoading(false);
     }
@@ -267,6 +306,12 @@ export default function RoomManagement({
 
       <div className="tabs">
         <button
+          className={`tab ${activeTab === "rooms" ? "active" : ""}`}
+          onClick={() => setActiveTab("rooms")}
+        >
+          Rooms
+        </button>
+        <button
           className={`tab ${activeTab === "room-types" ? "active" : ""}`}
           onClick={() => setActiveTab("room-types")}
         >
@@ -279,6 +324,130 @@ export default function RoomManagement({
           Seasonal Pricing
         </button>
       </div>
+
+      {/* Rooms Tab */}
+      {activeTab === "rooms" && (
+        <div className="tab-content">
+          <div className="content-header">
+            <h2>Room Status Management</h2>
+            <div className="header-stats">
+              <span className="stat-badge stat-clean">
+                Clean: {rooms.filter(r => r.status === "Clean" && !r.has_reservation).length}
+              </span>
+              <span className="stat-badge stat-reserved">
+                Reserved: {rooms.filter(r => r.has_reservation).length}
+              </span>
+              <span className="stat-badge stat-occupied">
+                Occupied: {rooms.filter(r => r.status === "Occupied").length}
+              </span>
+              <span className="stat-badge stat-dirty">
+                Dirty: {rooms.filter(r => r.status === "Dirty").length}
+              </span>
+              <span className="stat-badge stat-maintenance">
+                Maintenance: {rooms.filter(r => r.status === "Maintenance").length}
+              </span>
+            </div>
+          </div>
+
+          <div className="rooms-table-container">
+            <table className="rooms-table">
+              <thead>
+                <tr>
+                  <th>Room Number</th>
+                  <th>Floor</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Base Price</th>
+                  <th>Max Guests</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rooms.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: "center", padding: "2rem" }}>
+                      {loading ? "Loading rooms..." : "No rooms found"}
+                    </td>
+                  </tr>
+                ) : (
+                  rooms
+                    .sort((a, b) => {
+                      if (a.floor !== b.floor) return a.floor - b.floor;
+                      return a.room_number.localeCompare(b.room_number);
+                    })
+                    .map((room) => (
+                      <tr key={room.room_id}>
+                        <td className="room-number-cell">
+                          <strong>{room.room_number}</strong>
+                        </td>
+                        <td>{room.floor}</td>
+                        <td>{room.type_name}</td>
+                        <td>
+                          <span
+                            className={`status-badge status-${room.status.toLowerCase()}`}
+                          >
+                            {room.has_reservation && room.status === "Clean"
+                              ? `Reserved (${room.reservation_check_in})`
+                              : room.status}
+                          </span>
+                        </td>
+                        <td>¥{room.base_price}</td>
+                        <td>{room.max_occupancy}</td>
+                        <td className="actions-cell">
+                          <div className="action-buttons">
+                            {room.status === "Dirty" && (
+                              <button
+                                className="btn-action btn-clean"
+                                onClick={() => handleUpdateRoomStatus(room.room_id, "Clean")}
+                                disabled={loading}
+                                title="Mark as Clean"
+                              >
+                                ✓ Clean
+                              </button>
+                            )}
+                            {room.status === "Clean" && !room.has_reservation && (
+                              <>
+                                <button
+                                  className="btn-action btn-dirty"
+                                  onClick={() => handleUpdateRoomStatus(room.room_id, "Dirty")}
+                                  disabled={loading}
+                                  title="Mark as Dirty"
+                                >
+                                  ◐ Dirty
+                                </button>
+                                <button
+                                  className="btn-action btn-maintenance"
+                                  onClick={() => handleUpdateRoomStatus(room.room_id, "Maintenance")}
+                                  disabled={loading}
+                                  title="Mark for Maintenance"
+                                >
+                                  ⚠ Maintenance
+                                </button>
+                              </>
+                            )}
+                            {room.status === "Maintenance" && (
+                              <button
+                                className="btn-action btn-clean"
+                                onClick={() => handleUpdateRoomStatus(room.room_id, "Clean")}
+                                disabled={loading}
+                                title="Mark as Clean"
+                              >
+                                ✓ Clean
+                              </button>
+                            )}
+                            {room.status === "Occupied" && (
+                              <span className="occupied-note">In use</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Room Types Tab */}
       {activeTab === "room-types" && (

@@ -336,3 +336,165 @@
     padding: 0.75rem 0.5rem;
   }
 }
+
+/* Room Status Management Styles */
+.header-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stat-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.stat-clean {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.stat-reserved {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.stat-occupied {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.stat-dirty {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.stat-maintenance {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.rooms-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.rooms-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rooms-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.rooms-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.rooms-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.rooms-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.rooms-table td {
+  padding: 1rem;
+  font-size: 0.95rem;
+}
+
+.room-number-cell strong {
+  color: #1f2937;
+  font-size: 1.05rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+}
+
+.status-clean {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.status-occupied {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.status-dirty {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.status-maintenance {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.actions-cell {
+  min-width: 200px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.btn-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-clean {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.btn-clean:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-dirty {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.btn-dirty:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+}
+
+.btn-maintenance {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.btn-maintenance:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.occupied-note {
+  color: #6b7280;
+  font-style: italic;
+  font-size: 0.85rem;
+}
