@@ -1,6 +1,6 @@
 """
-黑盒测试自动化脚本
-测试前端所有功能，记录问题并提供修复建议
+Black Box Testing Automation Script
+Test all frontend functionalities, record issues and provide fix suggestions
 """
 
 import requests
@@ -8,11 +8,11 @@ import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
-# 配置
+# Configuration
 BASE_URL = "http://localhost:8000"
 FRONTEND_URL = "http://localhost:3000"
 
-# 测试数据
+# Test Data
 ADMIN_USER = {"username": "admin", "password": "admin123"}
 RECEPTIONIST_USER = {"username": "receptionist", "password": "receptionist123"}
 
@@ -68,7 +68,7 @@ class APITester:
         self.result = TestResult()
     
     def login(self, username: str, password: str) -> bool:
-        """登录获取token"""
+        """Login and get authentication token"""
         try:
             response = self.session.post(
                 f"{BASE_URL}/api/auth/login",
@@ -86,7 +86,7 @@ class APITester:
             return False
     
     def logout(self):
-        """登出"""
+        """Logout and clear session"""
         try:
             self.session.post(f"{BASE_URL}/api/auth/logout")
         except:
@@ -97,125 +97,125 @@ class APITester:
             self.session.headers.pop("Authorization", None)
     
     def test_authentication(self):
-        """测试1: 登录与认证"""
+        """Test Module 1: Login and Authentication"""
         print("\n" + "="*80)
-        print("模块 1: 登录与认证 (Authentication)")
+        print("Module 1: Login and Authentication")
         print("="*80)
         
-        # TC-AUTH-001: 管理员登录
+        # TC-AUTH-001: Admin login
         self.logout()
         if self.login(ADMIN_USER["username"], ADMIN_USER["password"]):
-            self.result.add_pass("TC-AUTH-001", "管理员成功登录")
+            self.result.add_pass("TC-AUTH-001", "Admin login successful")
         else:
-            self.result.add_fail("TC-AUTH-001", "管理员登录失败", "登录接口返回失败")
+            self.result.add_fail("TC-AUTH-001", "Admin login failed", "Login API returned failure")
         
-        # TC-AUTH-005: 登出
+        # TC-AUTH-005: Logout
         self.logout()
         if not self.token:
-            self.result.add_pass("TC-AUTH-005", "成功登出")
+            self.result.add_pass("TC-AUTH-005", "Logout successful")
         else:
-            self.result.add_fail("TC-AUTH-005", "登出失败", "Token仍然存在")
+            self.result.add_fail("TC-AUTH-005", "Logout failed", "Token still exists")
         
-        # TC-AUTH-002: 前台员工登录
+        # TC-AUTH-002: Receptionist login
         if self.login(RECEPTIONIST_USER["username"], RECEPTIONIST_USER["password"]):
-            self.result.add_pass("TC-AUTH-002", "前台员工成功登录")
+            self.result.add_pass("TC-AUTH-002", "Receptionist login successful")
         else:
-            self.result.add_fail("TC-AUTH-002", "前台员工登录失败", "登录接口返回失败")
+            self.result.add_fail("TC-AUTH-002", "Receptionist login failed", "Login API returned failure")
         
-        # TC-AUTH-003: 错误密码
+        # TC-AUTH-003: Wrong password
         self.logout()
         if not self.login("admin", "wrongpassword"):
-            self.result.add_pass("TC-AUTH-003", "错误密码正确拒绝")
+            self.result.add_pass("TC-AUTH-003", "Wrong password correctly rejected")
         else:
-            self.result.add_fail("TC-AUTH-003", "错误密码登录成功", "安全问题：应该拒绝错误密码")
+            self.result.add_fail("TC-AUTH-003", "Wrong password accepted", "Security issue: should reject wrong password")
         
-        # TC-AUTH-004: 不存在的用户
+        # TC-AUTH-004: Non-existent user
         if not self.login("nonexistent", "password"):
-            self.result.add_pass("TC-AUTH-004", "不存在的用户正确拒绝")
+            self.result.add_pass("TC-AUTH-004", "Non-existent user correctly rejected")
         else:
-            self.result.add_fail("TC-AUTH-004", "不存在的用户登录成功", "安全问题：应该拒绝不存在的用户")
+            self.result.add_fail("TC-AUTH-004", "Non-existent user accepted", "Security issue: should reject non-existent user")
     
     def test_dashboard(self):
-        """测试2: Dashboard总览"""
+        """Test Module 2: Dashboard Overview"""
         print("\n" + "="*80)
-        print("模块 2: Dashboard总览 (Dashboard)")
+        print("Module 2: Dashboard Overview")
         print("="*80)
         
-        # 确保已登录
+        # Ensure logged in
         if not self.token:
             self.login(ADMIN_USER["username"], ADMIN_USER["password"])
         
-        # TC-DASH-001: Dashboard统计数据
+        # TC-DASH-001: Dashboard statistics data
         try:
             response = self.session.get(f"{BASE_URL}/api/dashboard/stats")
             if response.status_code == 200:
                 data = response.json()
                 stats = data.get("stats", {})
                 if all(key in stats for key in ["total_rooms", "available_rooms", "total_reservations", "today_checkins"]):
-                    self.result.add_pass("TC-DASH-001", "Dashboard统计数据完整")
+                    self.result.add_pass("TC-DASH-001", "Dashboard statistics data complete")
                 else:
-                    self.result.add_fail("TC-DASH-001", "Dashboard统计数据不完整", f"缺少必要字段，实际数据: {stats.keys()}")
+                    self.result.add_fail("TC-DASH-001", "Dashboard statistics data incomplete", f"Missing required fields, actual data: {stats.keys()}")
             else:
-                self.result.add_fail("TC-DASH-001", "Dashboard统计数据获取失败", f"HTTP {response.status_code}")
+                self.result.add_fail("TC-DASH-001", "Failed to get dashboard statistics", f"HTTP {response.status_code}")
         except Exception as e:
-            self.result.add_fail("TC-DASH-001", "Dashboard统计数据请求异常", str(e))
+            self.result.add_fail("TC-DASH-001", "Dashboard statistics request exception", str(e))
     
     def test_hotel_map(self):
-        """测试3: 酒店地图"""
+        """Test Module 3: Hotel Map"""
         print("\n" + "="*80)
-        print("模块 3: 酒店地图 (Hotel Map)")
+        print("Module 3: Hotel Map")
         print("="*80)
         
-        # 确保已登录
+        # Ensure logged in
         if not self.token:
             self.login(ADMIN_USER["username"], ADMIN_USER["password"])
         
-        # TC-MAP-001: 加载所有房间
+        # TC-MAP-001: Load all rooms
         try:
             response = self.session.get(f"{BASE_URL}/api/rooms/with-reservations")
             if response.status_code == 200:
                 data = response.json()
                 rooms = data.get("data", [])
                 if len(rooms) > 0:
-                    self.result.add_pass("TC-MAP-001", f"成功加载{len(rooms)}个房间")
+                    self.result.add_pass("TC-MAP-001", f"Successfully loaded {len(rooms)} rooms")
                     
-                    # TC-MAP-002: 房间状态
+                    # TC-MAP-002: Room status
                     has_status = all("status" in room for room in rooms)
                     if has_status:
-                        self.result.add_pass("TC-MAP-002", "所有房间都有状态字段")
+                        self.result.add_pass("TC-MAP-002", "All rooms have status field")
                     else:
-                        self.result.add_fail("TC-MAP-002", "部分房间缺少状态字段", "数据结构不完整")
+                        self.result.add_fail("TC-MAP-002", "Some rooms missing status field", "Incomplete data structure")
                     
-                    # TC-MAP-004: 预订信息
+                    # TC-MAP-004: Reservation info
                     has_reservation_fields = all("has_reservation" in room for room in rooms)
                     if has_reservation_fields:
-                        self.result.add_pass("TC-MAP-004", "房间包含预订信息字段")
+                        self.result.add_pass("TC-MAP-004", "Rooms contain reservation info fields")
                     else:
-                        self.result.add_fail("TC-MAP-004", "房间缺少预订信息字段", "预订状态功能不可用")
+                        self.result.add_fail("TC-MAP-004", "Rooms missing reservation info fields", "Reservation status feature unavailable")
                 else:
-                    self.result.add_fail("TC-MAP-001", "未加载到房间数据", "返回的房间列表为空")
+                    self.result.add_fail("TC-MAP-001", "No room data loaded", "Returned room list is empty")
             else:
-                self.result.add_fail("TC-MAP-001", "房间数据获取失败", f"HTTP {response.status_code}")
+                self.result.add_fail("TC-MAP-001", "Failed to get room data", f"HTTP {response.status_code}")
         except Exception as e:
-            self.result.add_fail("TC-MAP-001", "房间数据请求异常", str(e))
+            self.result.add_fail("TC-MAP-001", "Room data request exception", str(e))
     
     def test_create_reservation(self):
-        """测试4: 创建新预订"""
+        """Test Module 4: Create New Reservation"""
         print("\n" + "="*80)
-        print("模块 4: 创建新预订 (New Reservation)")
+        print("Module 4: Create New Reservation")
         print("="*80)
         
-        # 确保已登录
+        # Ensure logged in
         if not self.token:
             self.login(ADMIN_USER["username"], ADMIN_USER["password"])
         
-        # 首先获取可用房间
+        # First get available rooms
         today = datetime.now().strftime("%Y-%m-%d")
         tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         checkout = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
         
         try:
-            # TC-RES-001: 搜索可用房间
+            # TC-RES-001: Search available rooms
             response = self.session.get(
                 f"{BASE_URL}/api/rooms/available",
                 params={"check_in": tomorrow, "check_out": checkout}
