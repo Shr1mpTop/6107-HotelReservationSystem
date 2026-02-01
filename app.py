@@ -2,10 +2,8 @@
 FastAPI Web Application for Hotel Reservation Management System
 """
 
-from fastapi import FastAPI, HTTPException, Depends, status, Request
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -25,15 +23,18 @@ from database.db_manager import db_manager
 # Initialize FastAPI app
 app = FastAPI(
     title="Hotel Reservation Management System",
-    description="A comprehensive hotel management system with web interface",
+    description="A comprehensive hotel management system REST API",
     version="1.0.0"
 )
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Templates
-templates = Jinja2Templates(directory="templates")
+# Configure CORS for Next.js frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Security
 security = HTTPBearer()
@@ -86,22 +87,16 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         full_name=session['full_name']
     )
 
-# Routes
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    """Serve the main dashboard page"""
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    """Serve the login page"""
-    return templates.TemplateResponse("login.html", {"request": request})
-
-@app.get("/test-date", response_class=HTMLResponse)
-async def date_test_page(request: Request):
-    """Serve the date input test page"""
-    from fastapi.responses import FileResponse
-    return FileResponse("static/date_test.html")
+# API Routes
+@app.get("/")
+async def read_root():
+    """API root endpoint"""
+    return {
+        "message": "Hotel Reservation Management System API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "frontend": "http://localhost:3000"
+    }
 
 # API Endpoints
 @app.post("/api/auth/login", response_model=LoginResponse)

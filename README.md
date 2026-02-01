@@ -1,33 +1,34 @@
 # Hotel Reservation Management System (HRMS)
 
-A comprehensive Hotel Reservation Management System built with Python and SQLite, featuring both **command-line interface (CLI)** and **modern web interface** powered by FastAPI. This system provides a complete solution for managing hotel operations, including user authentication, room and reservation management, dynamic pricing, and reporting. The entire application, including the user interface, codebase, and database, is presented in English.
+A professional, enterprise-grade Hotel Reservation Management System built with modern web technologies. Features a **Next.js React frontend** and **FastAPI Python backend**, providing a complete solution for managing hotel operations with role-based access control, real-time dashboards, and comprehensive reservation management. The entire application is fully internationalized in English.
 
 ## Features
 
-- **Dual Interface Support**:
-  - **Web Interface**: Modern, responsive web dashboard with intuitive user experience
-  - **CLI Interface**: Traditional command-line interface for system administration
-- **Role-Based Access Control**: Pre-defined roles (Administrator, Front Desk, Housekeeping) with specific permissions to ensure secure access to system functionalities.
-- **User Authentication & Session Management**: Secure user login with hashed passwords and session token management.
-- **Room Management**:
-  - Manage room types (e.g., Single, Double, Suite).
-  - Manage individual rooms, including their status (Clean, Dirty, Under Maintenance).
-  - View room availability based on dates.
-- **Reservation Management**:
-  - Create new reservations for guests.
-  - View detailed reservation information.
-  - Cancel existing reservations.
-- **Guest Management**: Store and manage guest information for reservations.
-- **Dynamic Pricing**: Implement seasonal pricing rules (e.g., peak season, holidays) with price multipliers.
-- **Real-time Dashboard**: Live statistics and occupancy rates with visual indicators.
-- **Responsive Design**: Web interface optimized for desktop and mobile devices.
-- **RESTful API**: Complete REST API for integration with other systems.
-- **Automated Setup**: Simple startup scripts for Windows and Linux/macOS that automatically install dependencies and initialize the database.
+- **Modern Web Interface**:
+  - **Next.js 14 Frontend**: Professional React-based interface with TypeScript
+  - **FastAPI Backend**: High-performance Python REST API
+  - **Real-time Updates**: Live dashboard with occupancy statistics
+  - **Professional Design**: Clean, emoji-free interface for business environments
+- **Dual Access Methods**:
+  - **Web Dashboard**: Modern responsive interface accessible from any device
+  - **CLI Interface**: Command-line tools for system administration and automation
+- **Role-Based Access Control**: Secure authentication with pre-defined roles (Administrator, Front Desk, Housekeeping)
+- **Comprehensive Management**:
+  - Room and room type management with status tracking
+  - Guest information and reservation lifecycle management
+  - Dynamic seasonal pricing with automatic calculations
+  - Availability search and conflict prevention
+- **Technical Excellence**:
+  - RESTful API with OpenAPI/Swagger documentation
+  - SQLite database with efficient query optimization
+  - Session-based authentication with JWT tokens
+  - Responsive design for desktop and mobile devices
 
 ## Technology Stack
 
-- **Backend**: Python 3
-- **Web Framework**: FastAPI (for REST API and web interface)
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Backend**: Python 3.8+, FastAPI, Uvicorn
+- **Database**: SQLite 3
 - **Database**: SQLite 3
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
 - **Core Libraries**:
@@ -39,37 +40,37 @@ A comprehensive Hotel Reservation Management System built with Python and SQLite
 
 ## Project Structure
 
-The project is organized into a modular structure for clarity and maintainability:
-
 ```
 /
-├── data/
-│   └── hrms.db           # SQLite database file (auto-generated)
-├── src/
-│   ├── database/         # Database connection, initialization, and schema
-│   ├── services/         # Business logic for all modules
-│   ├── ui/               # CLI User interface components (menus, display)
+├── data/                 # SQLite database (auto-generated)
+├── src/                  # Python backend source code
+│   ├── database/         # Database connection, schema, initialization
+│   ├── services/         # Business logic (auth, rooms, reservations, etc.)
+│   ├── ui/               # CLI interface components
 │   └── utils/            # Helper functions and validators
-├── templates/            # HTML templates for web interface
-│   ├── index.html        # Main dashboard page
-│   └── login.html        # Login page
-├── static/               # Static files for web interface
-│   ├── css/              # Stylesheets
-│   └── js/               # JavaScript files
-├── app.py                # FastAPI web application
-├── test_system.py        # Automated system test script
+├── frontend/             # Next.js React frontend
+│   ├── app/              # Next.js 14 app directory
+│   │   ├── components/   # React components
+│   │   ├── lib/          # API client and utilities
+│   │   ├── login/        # Login page
+│   │   └── dashboard/    # Main dashboard page
+│   ├── package.json      # Node.js dependencies
+│   └── next.config.js    # Next.js configuration
+├── app.py                # FastAPI backend server
 ├── requirements.txt      # Python dependencies
-├── run.bat               # CLI startup script for Windows
-├── run.sh                # CLI startup script for Linux/macOS
-├── run_web.bat           # Web server startup script for Windows
-└── run_web.sh            # Web server startup script for Linux/macOS
+├── start.bat/sh          # Full stack startup (recommended)
+├── run_backend.bat/sh    # Backend API server only
+├── run_frontend.bat/sh   # Frontend dev server only
+└── run.bat/sh            # CLI interface
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.8 or newer.
+- **Python 3.8+** (for backend)
+- **Node.js 18+** (for Next.js frontend)
+- **npm or yarn** (Node package manager)
 
 ### Installation & Setup
 
@@ -80,7 +81,39 @@ The project is organized into a modular structure for clarity and maintainabilit
     cd 6107-HotelReservationSystem
     ```
 
-2.  **Run the startup script:**
+2.  **Start the Backend Server:**
+
+    The FastAPI backend must be running for the frontend to work.
+    - **On Windows:**
+      ```bat
+      run_web.bat
+      ```
+    - **On Linux or macOS:**
+      ```bash
+      chmod +x run_web.sh
+      ./run_web.sh
+      ```
+
+    The backend will start on `http://localhost:8000`
+
+3.  **Start the Next.js Frontend (Recommended):**
+
+    In a new terminal window:
+    - **On Windows:**
+      ```bat
+      run_frontend.bat
+      ```
+    - **On Linux or macOS:**
+      ```bash
+      chmod +x run_frontend.sh
+      ./run_frontend.sh
+      ```
+
+    The frontend will start on `http://localhost:3000`
+
+4.  **Alternative: CLI Interface**
+
+    For command-line access:
     - **On Windows:**
       ```bat
       run.bat
@@ -91,7 +124,9 @@ The project is organized into a modular structure for clarity and maintainabilit
       ./run.sh
       ```
 
-    The script will automatically perform the following steps:
+    The startup scripts will automatically:
+    - Check if required dependencies are installed
+    - Install all required packages from `requirements.txt` (Python) or `package.json` (Node.js)
     - Check if Python is installed.
     - Install all required dependencies from `requirements.txt`.
     - Create the `data/` directory if it doesn't exist.
@@ -99,7 +134,30 @@ The project is organized into a modular structure for clarity and maintainabilit
 
 ## How to Use
 
-After running the startup script, the system will launch, and you can log in with one of the default user accounts.
+### Next.js Web Interface (Recommended)
+
+1. **Start the backend server** (see installation steps above)
+2. **Start the frontend server** using `run_frontend.bat` or `run_frontend.sh`
+3. **Open your browser** and navigate to: `http://localhost:3000`
+4. **Login** with one of the demo accounts (see credentials below)
+
+The Next.js interface provides:
+
+- **Professional Dashboard**: Clean, business-focused design without emojis
+- **Real-time Statistics**: Live occupancy rates and room status updates
+- **Intuitive Navigation**: Easy-to-use sidebar menu system
+- **Responsive Layout**: Works on desktop, tablet, and mobile devices
+- **Type-safe Development**: Built with TypeScript for reliability
+
+### Legacy HTML Interface
+
+For the original HTML/JavaScript interface, start only the backend and navigate to: `http://localhost:8000`
+
+### CLI Interface
+
+Run the CLI startup scripts for command-line access with full system functionality.
+
+### Login Credentials
 
 ### Default User Accounts
 
