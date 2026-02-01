@@ -310,41 +310,7 @@ export default function DashboardPage() {
           {activeSection === "rooms" && (
             <div>
               <h2 className="section-header">Room Management</h2>
-              <button
-                onClick={loadRooms}
-                className="btn btn-primary"
-                style={{ marginBottom: "1.5rem" }}
-              >
-                Refresh Rooms
-              </button>
-              <div className="rooms-grid">
-                {rooms.map((room) => (
-                  <div key={room.room_id} className="room-card">
-                    <div className="room-header">
-                      <div className="room-number">Room {room.room_number}</div>
-                      <span
-                        className={`room-status ${room.status.toLowerCase().replace(" ", "-")}`}
-                      >
-                        {room.status}
-                      </span>
-                    </div>
-                    <div className="room-info">
-                      <p>
-                        <strong>Type:</strong> {room.type_name}
-                      </p>
-                      <p>
-                        <strong>Floor:</strong> {room.floor}
-                      </p>
-                      <p>
-                        <strong>Max Occupancy:</strong> {room.max_occupancy}
-                      </p>
-                      <p>
-                        <strong>Base Price:</strong> ¥{room.base_price}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <RoomManagement defaultTab="rooms" />
             </div>
           )}
 
