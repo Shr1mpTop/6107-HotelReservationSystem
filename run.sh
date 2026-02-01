@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# 酒店预订管理系统 - 快速启动脚本
+# Hotel Reservation Management System - Quick Start Script
 
 echo "========================================"
-echo "酒店预订管理系统 (HRMS)"
+echo "Hotel Reservation Management System (HRMS)"
 echo "========================================"
 echo ""
 
-# 检查Python是否安装
+# Check if Python is installed
 if ! command -v python3 &> /dev/null; then
     echo "错误: 未找到Python3，请先安装Python 3.8或更高版本"
     exit 1

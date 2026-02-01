@@ -125,11 +125,11 @@ def insert_sample_seasonal_pricing():
     room_types = db_manager.execute_query("SELECT room_type_id, type_name FROM room_types")
     
     pricing_rules = [
-        # Chinese New Year Peak Season (double price for all room types)
-        (1, 'Chinese New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
-        (2, 'Chinese New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
-        (3, 'Chinese New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
-        (4, 'Chinese New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
+        # Lunar New Year Peak Season (double price for all room types)
+        (1, 'Lunar New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
+        (2, 'Lunar New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
+        (3, 'Lunar New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
+        (4, 'Lunar New Year Peak Season', '2026-01-24', '2026-02-07', 2.0, None),
         
         # Summer Peak Season (50% price increase in July-August)
         (1, 'Summer Peak Season', '2026-07-01', '2026-08-31', 1.5, None),

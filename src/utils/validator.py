@@ -31,7 +31,7 @@ def validate_phone(phone: str) -> bool:
     Returns:
         Whether valid
     """
-    # 简单验证：11位数字
+    # Simple validation: 11 digits
     pattern = r'^\d{11}$'
     return bool(re.match(pattern, phone))
 
@@ -60,7 +60,7 @@ def validate_id_number(id_number: str) -> bool:
     Returns:
         Whether valid
     """
-    # 简单验证：15或18位
+    # Simple validation: 15 or 18 digits
     pattern = r'^\d{15}$|^\d{17}[\dXx]$'
     return bool(re.match(pattern, id_number))
 
