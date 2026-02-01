@@ -1,13 +1,13 @@
 """
-主菜单模块
-处理CLI界面的菜单导航和用户交互
+Main Menu Module
+Handles CLI interface menu navigation and user interaction
 """
 
 import sys
 import os
 from datetime import datetime, timedelta
 
-# 添加项目根目录到路径
+# Add project root directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from ui.display import Display
@@ -19,7 +19,7 @@ from services.report_service import ReportService
 
 
 class HRMSMenu:
-    """酒店预订管理系统菜单类"""
+    """Hotel Reservation Management System Menu Class"""
     
     def __init__(self):
         self.current_user = None
@@ -27,76 +27,76 @@ class HRMSMenu:
         self.running = True
     
     def start(self):
-        """启动系统"""
+        """Start system"""
         Display.clear_screen()
         Display.print_logo()
         
-        # 登录
+        # Login
         if not self.login():
             return
         
-        # 主菜单循环
+        # Main menu loop
         while self.running:
             self.show_main_menu()
     
     def login(self) -> bool:
-        """用户登录"""
-        Display.print_header("用户登录")
+        """User login"""
+        Display.print_header("User Login")
         
         max_attempts = 3
         attempts = 0
         
         while attempts < max_attempts:
-            username = Display.get_input("用户名")
-            if username is None:  # 用户取消
+            username = Display.get_input("Username")
+            if username is None:  # User cancelled
                 return False
             
-            password = Display.get_input("密码")
-            if password is None:  # 用户取消
+            password = Display.get_input("Password")
+            if password is None:  # User cancelled
                 return False
             
-            # 尝试登录
+            # Try login
             result = AuthService.login(username, password)
             
             if result:
                 self.session_token = result['session_token']
                 self.current_user = result['user']
                 
-                Display.print_success(f"欢迎, {self.current_user['full_name']}!")
-                Display.print_info(f"角色: {self._get_role_name(self.current_user['role'])}")
+                Display.print_success(f"Welcome, {self.current_user['full_name']}!")
+                Display.print_info(f"Role: {self._get_role_name(self.current_user['role'])}")
                 Display.pause()
                 return True
             else:
                 attempts += 1
                 remaining = max_attempts - attempts
                 if remaining > 0:
-                    Display.print_error(f"用户名或密码错误，还有 {remaining} 次尝试机会")
+                    Display.print_error(f"Invalid username or password, {remaining} attempts remaining")
                 else:
-                    Display.print_error("登录失败次数过多，系统退出")
+                    Display.print_error("Too many failed login attempts, system exit")
                     return False
         
         return False
     
     def logout(self):
-        """用户登出"""
+        """User logout"""
         if self.session_token:
             AuthService.logout(self.session_token)
-            Display.print_success("已安全退出系统")
+            Display.print_success("Successfully logged out of the system")
         self.running = False
     
     def show_main_menu(self):
-        """显示主菜单"""
+        """Show main menu"""
         Display.clear_screen()
         
-        # 检查会话是否有效
+        # Check if session is valid
         if not AuthService.validate_session(self.session_token):
-            Display.print_warning("会话已过期，请重新登录")
+            Display.print_warning("Session has expired, please login again")
             self.running = False
             return
         
         role = self.current_user['role']
         
-        # 根据角色显示不同的菜单
+        # Show different menus based on role
         if role == 'admin':
             self._show_admin_menu()
         elif role == 'front_desk':
@@ -105,18 +105,18 @@ class HRMSMenu:
             self._show_housekeeping_menu()
     
     def _show_admin_menu(self):
-        """管理员菜单"""
+        """Admin menu"""
         options = [
-            "预订管理",
-            "运营管理",
-            "房间管理",
-            "定价配置",
-            "报表管理",
-            "系统管理",
-            "退出登录"
+            "Reservation Management",
+            "Operation Management",
+            "Room Management",
+            "Pricing Configuration",
+            "Report Management",
+            "System Management",
+            "Logout"
         ]
         
-        Display.print_menu("管理员主菜单", options, show_back=False)
+        Display.print_menu("Admin Main Menu", options, show_back=False)
         choice = Display.get_choice(len(options))
         
         if choice == 1:
@@ -135,15 +135,15 @@ class HRMSMenu:
             self.logout()
     
     def _show_front_desk_menu(self):
-        """前台员工菜单"""
+        """Front desk staff menu"""
         options = [
-            "预订管理",
-            "运营管理",
-            "查看房间状态",
-            "退出登录"
+            "Reservation Management",
+            "Operation Management",
+            "View Room Status",
+            "Logout"
         ]
         
-        Display.print_menu("前台员工主菜单", options, show_back=False)
+        Display.print_menu("Front Desk Staff Main Menu", options, show_back=False)
         choice = Display.get_choice(len(options))
         
         if choice == 1:
@@ -156,14 +156,14 @@ class HRMSMenu:
             self.logout()
     
     def _show_housekeeping_menu(self):
-        """客房员工菜单"""
+        """Housekeeping staff menu"""
         options = [
-            "查看房间状态",
-            "更新房间状态",
-            "退出登录"
+            "View Room Status",
+            "Update Room Status",
+            "Logout"
         ]
         
-        Display.print_menu("客房员工主菜单", options, show_back=False)
+        Display.print_menu("Housekeeping Staff Main Menu", options, show_back=False)
         choice = Display.get_choice(len(options))
         
         if choice == 1:
@@ -173,23 +173,23 @@ class HRMSMenu:
         elif choice == 3 or choice == 0:
             self.logout()
     
-    # ==================== 预订管理菜单 ====================
+    # ==================== Reservation Management Menu ====================
     
     def reservation_menu(self):
-        """预订管理菜单"""
+        """Reservation management menu"""
         while True:
             Display.clear_screen()
             options = [
-                "查询可用房间",
-                "创建新预订",
-                "查询预订",
-                "修改预订",
-                "取消预订",
-                "查看今日入住",
-                "查看当前在住"
+                "Search Available Rooms",
+                "Create New Reservation",
+                "Search Reservations",
+                "Modify Reservation",
+                "Cancel Reservation",
+                "View Today's Check-ins",
+                "View Current Guests"
             ]
             
-            Display.print_menu("预订管理", options)
+            Display.print_menu("Reservation Management", options)
             choice = Display.get_choice(len(options))
             
             if choice == 0:
@@ -210,40 +210,40 @@ class HRMSMenu:
                 self.view_current_checkins()
     
     def search_available_rooms(self):
-        """查询可用房间"""
+        """Search available rooms"""
         Display.clear_screen()
-        Display.print_header("查询可用房间")
+        Display.print_header("Search Available Rooms")
         
-        # 获取日期范围
-        check_in = Display.get_input("入住日期 (YYYY-MM-DD)")
+        # Get date range
+        check_in = Display.get_input("Check-in date (YYYY-MM-DD)")
         if not check_in:
             return
         
-        check_out = Display.get_input("退房日期 (YYYY-MM-DD)")
+        check_out = Display.get_input("Check-out date (YYYY-MM-DD)")
         if not check_out:
             return
         
-        # 获取房型（可选）
+        # Get room type (optional)
         room_types = RoomService.get_room_types()
         if room_types:
             Display.print_table(
-                [{'ID': rt['room_type_id'], '房型': rt['type_name'], 
-                  '基础价格': Display.format_currency(rt['base_price']),
-                  '最大入住': rt['max_occupancy']} for rt in room_types],
-                title="可选房型"
+                [{'ID': rt['room_type_id'], 'Room Type': rt['type_name'], 
+                  'Base Price': Display.format_currency(rt['base_price']),
+                  'Max Occupancy': rt['max_occupancy']} for rt in room_types],
+                title="Available Room Types"
             )
         
-        room_type_id = Display.get_input("房型ID (留空查询所有)", int, allow_empty=True)
+        room_type_id = Display.get_input("Room type ID (leave empty for all)", int, allow_empty=True)
         
-        # 查询可用房间
+        # Search available rooms
         available_rooms = RoomService.get_available_rooms(
             check_in, check_out, room_type_id
         )
         
         if not available_rooms:
-            Display.print_warning("没有找到可用房间")
+            Display.print_warning("No available rooms found")
         else:
-            # 计算价格并显示
+            # Calculate price and display
             rooms_with_price = []
             for room in available_rooms:
                 pricing_info = PricingService.calculate_total_price(
@@ -253,37 +253,37 @@ class HRMSMenu:
                 )
                 
                 rooms_with_price.append({
-                    '房间号': room['room_number'],
-                    '房型': room['type_name'],
-                    '楼层': room['floor'],
-                    '最大入住': room['max_occupancy'],
-                    '总价': Display.format_currency(pricing_info['total']),
-                    '夜数': pricing_info['nights']
+                    'Room Number': room['room_number'],
+                    'Room Type': room['type_name'],
+                    'Floor': room['floor'],
+                    'Max Occupancy': room['max_occupancy'],
+                    'Total Price': Display.format_currency(pricing_info['total']),
+                    'Nights': pricing_info['nights']
                 })
             
-            Display.print_table(rooms_with_price, title=f"可用房间 ({check_in} 至 {check_out})")
+            Display.print_table(rooms_with_price, title=f"Available Rooms ({check_in} to {check_out})")
         
         Display.pause()
     
     def create_reservation(self):
-        """创建新预订"""
+        """Create new reservation"""
         Display.clear_screen()
-        Display.print_header("创建新预订")
+        Display.print_header("Create New Reservation")
         
-        # 1. 获取入住信息
-        check_in = Display.get_input("入住日期 (YYYY-MM-DD)")
+        # 1. Get check-in information
+        check_in = Display.get_input("Check-in date (YYYY-MM-DD)")
         if not check_in:
             return
         
-        check_out = Display.get_input("退房日期 (YYYY-MM-DD)")
+        check_out = Display.get_input("Check-out date (YYYY-MM-DD)")
         if not check_out:
             return
         
-        # 2. 显示可用房间
+        # 2. Display available rooms
         available_rooms = RoomService.get_available_rooms(check_in, check_out)
         
         if not available_rooms:
-            Display.print_error("所选日期没有可用房间")
+            Display.print_error("No available rooms for selected dates")
             Display.pause()
             return
         
@@ -296,78 +296,78 @@ class HRMSMenu:
             )
             rooms_display.append({
                 'ID': room['room_id'],
-                '房间号': room['room_number'],
-                '房型': room['type_name'],
-                '楼层': room['floor'],
-                '最大入住': room['max_occupancy'],
-                '总价': Display.format_currency(pricing_info['total'])
+                'Room Number': room['room_number'],
+                'Room Type': room['type_name'],
+                'Floor': room['floor'],
+                'Max Occupancy': room['max_occupancy'],
+                'Total Price': Display.format_currency(pricing_info['total'])
             })
         
-        Display.print_table(rooms_display, title="可用房间")
+        Display.print_table(rooms_display, title="Available Rooms")
         
-        # 3. 选择房间
-        room_id = Display.get_input("选择房间ID", int)
+        # 3. Select room
+        room_id = Display.get_input("Select room ID", int)
         if not room_id:
             return
         
-        # 验证房间ID
+        # Validate room ID
         selected_room = next((r for r in available_rooms if r['room_id'] == room_id), None)
         if not selected_room:
-            Display.print_error("无效的房间ID")
+            Display.print_error("Invalid room ID")
             Display.pause()
             return
         
-        # 4. 获取客人信息
-        Display.print_subheader("客人信息")
+        # 4. Get guest information
+        Display.print_subheader("Guest Information")
         
         guest_info = {
-            'first_name': Display.get_input("名"),
-            'last_name': Display.get_input("姓"),
-            'phone': Display.get_input("手机号"),
-            'email': Display.get_input("邮箱", allow_empty=True),
-            'id_number': Display.get_input("身份证号", allow_empty=True),
-            'address': Display.get_input("地址", allow_empty=True)
+            'first_name': Display.get_input("First name"),
+            'last_name': Display.get_input("Last name"),
+            'phone': Display.get_input("Phone number"),
+            'email': Display.get_input("Email", allow_empty=True),
+            'id_number': Display.get_input("ID number", allow_empty=True),
+            'address': Display.get_input("Address", allow_empty=True)
         }
         
         if not all([guest_info['first_name'], guest_info['last_name'], guest_info['phone']]):
-            Display.print_error("必填信息不完整")
+            Display.print_error("Required information is incomplete")
             Display.pause()
             return
         
-        # 5. 其他信息
-        num_guests = Display.get_input("客人数量", int, default=1)
+        # 5. Other information
+        num_guests = Display.get_input("Number of guests", int, default=1)
         if num_guests > selected_room['max_occupancy']:
-            Display.print_error(f"客人数量超过房间最大容纳量 ({selected_room['max_occupancy']}人)")
+            Display.print_error(f"Number of guests exceeds room capacity ({selected_room['max_occupancy']} people)")
             Display.pause()
             return
         
-        special_requests = Display.get_input("特殊要求", allow_empty=True) or ""
+        special_requests = Display.get_input("Special requests", allow_empty=True) or ""
         
-        # 6. 确认预订
+        # 6. Confirm reservation
         pricing_info = PricingService.calculate_total_price(
             selected_room['room_type_id'],
             check_in,
             check_out
         )
         
-        Display.print_subheader("预订确认")
+        Display.print_subheader("Reservation Confirmation")
         Display.print_detail({
-            '房间号': selected_room['room_number'],
-            '房型': selected_room['type_name'],
-            '入住日期': check_in,
-            '退房日期': check_out,
-            '夜数': pricing_info['nights'],
-            '客人': f"{guest_info['last_name']}{guest_info['first_name']}",
-            '客人数量': num_guests,
-            '总价': Display.format_currency(pricing_info['total'])
+            'Room Number': selected_room['room_number'],
+            'Room Type': selected_room['type_name'],
+            'Check-in Date': check_in,
+            'Check-out Date': check_out,
+            'Nights': pricing_info['nights'],
+            'Guest': f"{guest_info['last_name']}{guest_info['first_name']}",
+            'Number of Guests': num_guests,
+            'Total Price': Display.format_currency(pricing_info['total'])
         })
         
-        if not Display.confirm("确认创建预订?"):
-            Display.print_info("已取消")
+        if not Display.confirm("Confirm creating reservation?"):
+            Display.print_info("Cancelled")
             Display.pause()
             return
         
-        # 7. 创建预订
+        # 7. Create reservation
         success, message, reservation_id = ReservationService.create_reservation(
             guest_info, room_id, check_in, check_out,
             num_guests, special_requests,
@@ -382,18 +382,18 @@ class HRMSMenu:
         Display.pause()
     
     def search_reservations(self):
-        """查询预订"""
+        """Search reservations"""
         Display.clear_screen()
-        Display.print_header("查询预订")
+        Display.print_header("Search Reservations")
         
-        Display.print_info("请输入查询条件（留空跳过）:")
+        Display.print_info("Enter search criteria (leave empty to skip):")
         
-        reservation_id = Display.get_input("预订ID", int, allow_empty=True)
-        guest_name = Display.get_input("客人姓名", allow_empty=True)
-        phone = Display.get_input("手机号", allow_empty=True)
-        room_number = Display.get_input("房间号", allow_empty=True)
+        reservation_id = Display.get_input("Reservation ID", int, allow_empty=True)
+        guest_name = Display.get_input("Guest name", allow_empty=True)
+        phone = Display.get_input("Phone number", allow_empty=True)
+        room_number = Display.get_input("Room number", allow_empty=True)
         
-        # 查询
+        # Search
         reservations = ReservationService.search_reservations(
             guest_name=guest_name,
             phone=phone,
@@ -402,111 +402,111 @@ class HRMSMenu:
         )
         
         if not reservations:
-            Display.print_warning("没有找到匹配的预订")
+            Display.print_warning("No matching reservations found")
         else:
             display_data = []
             for res in reservations:
                 display_data.append({
                     'ID': res['reservation_id'],
-                    '客人': res['guest_name'],
-                    '手机': res['phone'],
-                    '房间': res['room_number'],
-                    '房型': res['room_type'],
-                    '入住': res['check_in_date'],
-                    '退房': res['check_out_date'],
-                    '状态': res['status'],
-                    '总价': Display.format_currency(res['total_price'])
+                    'Guest': res['guest_name'],
+                    'Phone': res['phone'],
+                    'Room': res['room_number'],
+                    'Room Type': res['room_type'],
+                    'Check-in': res['check_in_date'],
+                    'Check-out': res['check_out_date'],
+                    'Status': res['status'],
+                    'Total Price': Display.format_currency(res['total_price'])
                 })
             
-            Display.print_table(display_data, title="预订列表")
+            Display.print_table(display_data, title="Reservation List")
             
-            # 询问是否查看详情
-            if Display.confirm("查看某个预订的详细信息?"):
-                res_id = Display.get_input("输入预订ID", int)
+            # Ask if want to view details
+            if Display.confirm("View details of a specific reservation?"):
+                res_id = Display.get_input("Enter reservation ID", int)
                 if res_id:
                     self.view_reservation_detail(res_id)
         
         Display.pause()
     
     def view_reservation_detail(self, reservation_id: int):
-        """查看预订详情"""
+        """View reservation details"""
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         
         if not reservation:
-            Display.print_error("预订不存在")
+            Display.print_error("Reservation does not exist")
             return
         
-        Display.print_subheader(f"预订详情 - {reservation_id}")
+        Display.print_subheader(f"Reservation Details - {reservation_id}")
         Display.print_detail({
-            '预订号': reservation['reservation_id'],
-            '状态': reservation['status'],
-            '客人姓名': reservation['guest_name'],
-            '手机号': reservation['phone'],
-            '邮箱': reservation.get('email', 'N/A'),
-            '房间号': reservation['room_number'],
-            '房型': reservation['room_type'],
-            '楼层': reservation['floor'],
-            '入住日期': reservation['check_in_date'],
-            '退房日期': reservation['check_out_date'],
-            '客人数量': reservation['num_guests'],
-            '总价': Display.format_currency(reservation['total_price']),
-            '特殊要求': reservation.get('special_requests') or '无',
-            '创建时间': Display.format_datetime(reservation['created_at']),
-            '创建者': reservation['created_by_name']
+            'Reservation ID': reservation['reservation_id'],
+            'Status': reservation['status'],
+            'Guest Name': reservation['guest_name'],
+            'Phone': reservation['phone'],
+            'Email': reservation.get('email', 'N/A'),
+            'Room Number': reservation['room_number'],
+            'Room Type': reservation['room_type'],
+            'Floor': reservation['floor'],
+            'Check-in Date': reservation['check_in_date'],
+            'Check-out Date': reservation['check_out_date'],
+            'Number of Guests': reservation['num_guests'],
+            'Total Price': Display.format_currency(reservation['total_price']),
+            'Special Requests': reservation.get('special_requests') or 'None',
+            'Created At': Display.format_datetime(reservation['created_at']),
+            'Created By': reservation['created_by_name']
         })
     
     def modify_reservation(self):
-        """修改预订"""
+        """Modify reservation"""
         Display.clear_screen()
-        Display.print_header("修改预订")
+        Display.print_header("Modify Reservation")
         
-        reservation_id = Display.get_input("预订ID", int)
+        reservation_id = Display.get_input("Reservation ID", int)
         if not reservation_id:
             return
         
-        # 获取预订详情
+        # Get reservation details
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         if not reservation:
-            Display.print_error("预订不存在")
+            Display.print_error("Reservation does not exist")
             Display.pause()
             return
         
-        # 显示当前信息
-        Display.print_subheader("当前预订信息")
+        # Display current information
+        Display.print_subheader("Current Reservation Information")
         Display.print_detail({
-            '预订号': reservation['reservation_id'],
-            '状态': reservation['status'],
-            '客人': reservation['guest_name'],
-            '房间': f"{reservation['room_number']} ({reservation['room_type']})",
-            '入住日期': reservation['check_in_date'],
-            '退房日期': reservation['check_out_date'],
-            '客人数量': reservation['num_guests']
+            'Reservation ID': reservation['reservation_id'],
+            'Status': reservation['status'],
+            'Guest': reservation['guest_name'],
+            'Room': f"{reservation['room_number']} ({reservation['room_type']})",
+            'Check-in Date': reservation['check_in_date'],
+            'Check-out Date': reservation['check_out_date'],
+            'Number of Guests': reservation['num_guests']
         })
         
         if reservation['status'] != 'Confirmed':
-            Display.print_error(f"预订状态为 {reservation['status']}，无法修改")
+            Display.print_error(f"Reservation status is {reservation['status']}, cannot modify")
             Display.pause()
             return
         
-        # 获取修改内容
-        Display.print_info("请输入要修改的内容（留空保持不变）:")
+        # Get modification content
+        Display.print_info("Enter content to modify (leave empty to keep unchanged):")
         
-        new_check_in = Display.get_input(f"新入住日期 (当前: {reservation['check_in_date']})", allow_empty=True)
-        new_check_out = Display.get_input(f"新退房日期 (当前: {reservation['check_out_date']})", allow_empty=True)
-        new_num_guests = Display.get_input(f"新客人数量 (当前: {reservation['num_guests']})", int, allow_empty=True)
-        new_special_requests = Display.get_input("新特殊要求", allow_empty=True)
+        new_check_in = Display.get_input(f"New check-in date (current: {reservation['check_in_date']})", allow_empty=True)
+        new_check_out = Display.get_input(f"New check-out date (current: {reservation['check_out_date']})", allow_empty=True)
+        new_num_guests = Display.get_input(f"New number of guests (current: {reservation['num_guests']})", int, allow_empty=True)
+        new_special_requests = Display.get_input("New special requests", allow_empty=True)
         
         if not any([new_check_in, new_check_out, new_num_guests, new_special_requests]):
-            Display.print_info("没有修改任何内容")
+            Display.print_info("No content was modified")
             Display.pause()
             return
         
-        if not Display.confirm("确认修改预订?"):
-            Display.print_info("已取消")
+        if not Display.confirm("Confirm modifying reservation?"):
+            Display.print_info("Cancelled")
             Display.pause()
             return
         
-        # 执行修改
+        # Execute modification
         success, message = ReservationService.modify_reservation(
             reservation_id,
             new_check_in=new_check_in or None,
@@ -524,37 +524,37 @@ class HRMSMenu:
         Display.pause()
     
     def cancel_reservation(self):
-        """取消预订"""
+        """Cancel reservation"""
         Display.clear_screen()
-        Display.print_header("取消预订")
+        Display.print_header("Cancel Reservation")
         
-        reservation_id = Display.get_input("预订ID", int)
+        reservation_id = Display.get_input("Reservation ID", int)
         if not reservation_id:
             return
         
-        # 获取预订详情
+        # Get reservation details
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         if not reservation:
-            Display.print_error("预订不存在")
+            Display.print_error("Reservation does not exist")
             Display.pause()
             return
         
-        # 显示预订信息
+        # Display reservation information
         Display.print_detail({
-            '预订号': reservation['reservation_id'],
-            '客人': reservation['guest_name'],
-            '房间': reservation['room_number'],
-            '入住日期': reservation['check_in_date'],
-            '退房日期': reservation['check_out_date'],
-            '状态': reservation['status']
+            'Reservation ID': reservation['reservation_id'],
+            'Guest': reservation['guest_name'],
+            'Room': reservation['room_number'],
+            'Check-in Date': reservation['check_in_date'],
+            'Check-out Date': reservation['check_out_date'],
+            'Status': reservation['status']
         })
         
-        if not Display.confirm("确认取消此预订?"):
-            Display.print_info("已取消操作")
+        if not Display.confirm("Confirm canceling this reservation?"):
+            Display.print_info("Operation cancelled")
             Display.pause()
             return
         
-        # 执行取消
+        # Execute cancellation
         success, message = ReservationService.cancel_reservation(
             reservation_id,
             self.current_user['user_id']
@@ -568,65 +568,65 @@ class HRMSMenu:
         Display.pause()
     
     def view_upcoming_checkins(self):
-        """查看今日入住"""
+        """View today's check-ins"""
         Display.clear_screen()
         
         reservations = ReservationService.get_upcoming_checkins(days=1)
         
         if not reservations:
-            Display.print_warning("今日没有预计入住")
+            Display.print_warning("No expected check-ins today")
         else:
             display_data = [{
-                '预订ID': res['reservation_id'],
-                '客人': res['guest_name'],
-                '手机': res['phone'],
-                '房间': res['room_number'],
-                '房型': res['room_type'],
-                '入住日期': res['check_in_date'],
-                '退房日期': res['check_out_date']
+                'Reservation ID': res['reservation_id'],
+                'Guest': res['guest_name'],
+                'Phone': res['phone'],
+                'Room': res['room_number'],
+                'Room Type': res['room_type'],
+                'Check-in Date': res['check_in_date'],
+                'Check-out Date': res['check_out_date']
             } for res in reservations]
             
-            Display.print_table(display_data, title="今日预计入住")
+            Display.print_table(display_data, title="Today's Expected Check-ins")
         
         Display.pause()
     
     def view_current_checkins(self):
-        """查看当前在住"""
+        """View current check-ins"""
         Display.clear_screen()
         
         reservations = ReservationService.get_current_checkins()
         
         if not reservations:
-            Display.print_warning("当前没有在住客人")
+            Display.print_warning("No current guests checked in")
         else:
             display_data = [{
-                '预订ID': res['reservation_id'],
-                '客人': res['guest_name'],
-                '手机': res['phone'],
-                '房间': res['room_number'],
-                '房型': res['room_type'],
-                '入住日期': res['check_in_date'],
-                '退房日期': res['check_out_date']
+                'Reservation ID': res['reservation_id'],
+                'Guest': res['guest_name'],
+                'Phone': res['phone'],
+                'Room': res['room_number'],
+                'Room Type': res['room_type'],
+                'Check-in Date': res['check_in_date'],
+                'Check-out Date': res['check_out_date']
             } for res in reservations]
             
-            Display.print_table(display_data, title="当前在住客人")
+            Display.print_table(display_data, title="Current Checked-in Guests")
         
         Display.pause()
     
-    # ==================== 运营管理菜单 ====================
+    # ==================== Operation Management Menu ====================
     
     def operation_menu(self):
-        """运营管理菜单"""
+        """Operation management menu"""
         while True:
             Display.clear_screen()
             options = [
-                "办理入住",
-                "办理退房",
-                "查看今日入住",
-                "查看当前在住"
+                "Check-in Guest",
+                "Check-out Guest",
+                "View Today's Check-ins",
+                "View Current Check-ins"
             ]
             
-            Display.print_menu("运营管理", options)
+            Display.print_menu("Operation Management", options)
             choice = Display.get_choice(len(options))
             
             if choice == 0:
@@ -641,38 +641,38 @@ class HRMSMenu:
                 self.view_current_checkins()
     
     def check_in(self):
-        """办理入住"""
+        """Check-in guest"""
         Display.clear_screen()
-        Display.print_header("办理入住")
+        Display.print_header("Check-in Guest")
         
-        reservation_id = Display.get_input("预订ID", int)
+        reservation_id = Display.get_input("Reservation ID", int)
         if not reservation_id:
             return
         
-        # 获取预订详情
+        # Get reservation details
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         if not reservation:
-            Display.print_error("预订不存在")
+            Display.print_error("Reservation does not exist")
             Display.pause()
             return
         
-        # 显示预订信息
+        # Display reservation information
         Display.print_detail({
-            '预订号': reservation['reservation_id'],
-            '客人': reservation['guest_name'],
-            '手机': reservation['phone'],
-            '房间': reservation['room_number'],
-            '入住日期': reservation['check_in_date'],
-            '退房日期': reservation['check_out_date'],
-            '状态': reservation['status']
+            'Reservation ID': reservation['reservation_id'],
+            'Guest': reservation['guest_name'],
+            'Phone': reservation['phone'],
+            'Room': reservation['room_number'],
+            'Check-in Date': reservation['check_in_date'],
+            'Check-out Date': reservation['check_out_date'],
+            'Status': reservation['status']
         })
         
-        if not Display.confirm("确认办理入住?"):
-            Display.print_info("已取消")
+        if not Display.confirm("Confirm check-in?"):
+            Display.print_info("Cancelled")
             Display.pause()
             return
         
-        # 执行入住
+        # Execute check-in
         success, message = ReservationService.check_in(
             reservation_id,
             self.current_user['user_id']
@@ -686,40 +686,40 @@ class HRMSMenu:
         Display.pause()
     
     def check_out(self):
-        """办理退房"""
+        """Check-out guest"""
         Display.clear_screen()
-        Display.print_header("办理退房")
+        Display.print_header("Check-out Guest")
         
-        reservation_id = Display.get_input("预订ID", int)
+        reservation_id = Display.get_input("Reservation ID", int)
         if not reservation_id:
             return
         
-        # 获取预订详情
+        # Get reservation details
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         if not reservation:
-            Display.print_error("预订不存在")
+            Display.print_error("Reservation does not exist")
             Display.pause()
             return
         
-        # 显示预订信息
+        # Display reservation information
         Display.print_detail({
-            '预订号': reservation['reservation_id'],
-            '客人': reservation['guest_name'],
-            '房间': reservation['room_number'],
-            '入住日期': reservation['check_in_date'],
-            '退房日期': reservation['check_out_date'],
-            '应付金额': Display.format_currency(reservation['total_price']),
-            '状态': reservation['status']
+            'Reservation ID': reservation['reservation_id'],
+            'Guest': reservation['guest_name'],
+            'Room': reservation['room_number'],
+            'Check-in Date': reservation['check_in_date'],
+            'Check-out Date': reservation['check_out_date'],
+            'Amount Due': Display.format_currency(reservation['total_price']),
+            'Status': reservation['status']
         })
         
         if reservation['status'] != 'CheckedIn':
-            Display.print_error(f"预订状态为 {reservation['status']}，无法办理退房")
+            Display.print_error(f"Reservation status is {reservation['status']}, cannot check out")
             Display.pause()
             return
         
-        # 获取支付信息
-        Display.print_subheader("支付信息")
-        Display.print_info("支付方式: 1-现金, 2-信用卡, 3-借记卡, 4-在线转账")
+        # Get payment information
+        Display.print_subheader("Payment Information")
+        Display.print_info("Payment methods: 1-Cash, 2-Credit Card, 3-Debit Card, 4-Online Transfer")
         
         payment_method_map = {
             1: 'Cash',
@@ -728,25 +728,25 @@ class HRMSMenu:
             4: 'OnlineTransfer'
         }
         
-        method_choice = Display.get_input("选择支付方式", int)
+        method_choice = Display.get_input("Select payment method", int)
         if method_choice not in payment_method_map:
-            Display.print_error("无效的支付方式")
+            Display.print_error("Invalid payment method")
             Display.pause()
             return
         
         payment_method = payment_method_map[method_choice]
         payment_amount = Display.get_input(
-            "支付金额", 
+            "Payment amount", 
             float, 
             default=float(reservation['total_price'])
         )
         
-        if not Display.confirm(f"确认收款 {Display.format_currency(payment_amount)}?"):
-            Display.print_info("已取消")
+        if not Display.confirm(f"Confirm receiving {Display.format_currency(payment_amount)}?"):
+            Display.print_info("Cancelled")
             Display.pause()
             return
         
-        # 执行退房
+        # Execute check-out
         success, message = ReservationService.check_out(
             reservation_id,
             payment_method,
@@ -761,50 +761,50 @@ class HRMSMenu:
         
         Display.pause()
     
-    # ==================== 房间管理菜单 ====================
+    # ==================== Room Management Menu ====================
     
     def view_rooms(self):
-        """查看房间状态"""
+        """View room status"""
         Display.clear_screen()
-        Display.print_header("房间状态")
+        Display.print_header("Room Status")
         
-        # 获取统计信息
+        # Get statistics
         stats = RoomService.get_room_statistics()
         Display.print_info(
-            f"总房间数: {stats.get('total_rooms', 0)} | "
-            f"清洁: {stats.get('clean_rooms', 0)} | "
-            f"脏污: {stats.get('dirty_rooms', 0)} | "
-            f"已占用: {stats.get('occupied_rooms', 0)} | "
-            f"维护中: {stats.get('maintenance_rooms', 0)}"
+            f"Total Rooms: {stats.get('total_rooms', 0)} | "
+            f"Clean: {stats.get('clean_rooms', 0)} | "
+            f"Dirty: {stats.get('dirty_rooms', 0)} | "
+            f"Occupied: {stats.get('occupied_rooms', 0)} | "
+            f"Maintenance: {stats.get('maintenance_rooms', 0)}"
         )
         
-        # 获取所有房间
+        # Get all rooms
         rooms = RoomService.list_all_rooms()
         
         display_data = [{
-            '房间号': room['room_number'],
-            '房型': room['type_name'],
-            '楼层': room['floor'],
-            '状态': room['status'],
-            '最大入住': room['max_occupancy'],
-            '基础价格': Display.format_currency(room['base_price'])
+            'Room Number': room['room_number'],
+            'Room Type': room['type_name'],
+            'Floor': room['floor'],
+            'Status': room['status'],
+            'Max Occupancy': room['max_occupancy'],
+            'Base Price': Display.format_currency(room['base_price'])
         } for room in rooms]
         
-        Display.print_table(display_data, title="房间列表")
+        Display.print_table(display_data, title="Room List")
         Display.pause()
     
     def room_management_menu(self):
-        """房间管理菜单（管理员）"""
+        """Room management menu (Admin)"""
         while True:
             Display.clear_screen()
             options = [
-                "查看所有房间",
-                "更新房间状态",
-                "添加房间",
-                "房型管理"
+                "View All Rooms",
+                "Update Room Status",
+                "Add Room",
+                "Room Type Management"
             ]
             
-            Display.print_menu("房间管理", options)
+            Display.print_menu("Room Management", options)
             choice = Display.get_choice(len(options))
             
             if choice == 0:
@@ -819,23 +819,23 @@ class HRMSMenu:
                 self.room_type_menu()
     
     def update_room_status(self):
-        """更新房间状态"""
+        """Update room status"""
         Display.clear_screen()
-        Display.print_header("更新房间状态")
+        Display.print_header("Update Room Status")
         
-        room_number = Display.get_input("房间号")
+        room_number = Display.get_input("Room number")
         if not room_number:
             return
         
-        # 获取房间信息
+        # Get room information
         room = RoomService.get_room_by_number(room_number)
         if not room:
-            Display.print_error("房间不存在")
+            Display.print_error("Room does not exist")
             Display.pause()
             return
         
-        Display.print_info(f"当前状态: {room['status']}")
-        Display.print_info("状态选项: 1-Clean, 2-Dirty, 3-Occupied, 4-Maintenance")
+        Display.print_info(f"Current status: {room['status']}")
+        Display.print_info("Status options: 1-Clean, 2-Dirty, 3-Occupied, 4-Maintenance")
         
         status_map = {
             1: 'Clean',
@@ -844,20 +844,20 @@ class HRMSMenu:
             4: 'Maintenance'
         }
         
-        status_choice = Display.get_input("选择新状态", int)
+        status_choice = Display.get_input("Select new status", int)
         if status_choice not in status_map:
-            Display.print_error("无效的状态选择")
+            Display.print_error("Invalid status selection")
             Display.pause()
             return
         
         new_status = status_map[status_choice]
         
-        if not Display.confirm(f"确认将房间 {room_number} 状态改为 {new_status}?"):
-            Display.print_info("已取消")
+        if not Display.confirm(f"Confirm changing room {room_number} status to {new_status}?"):
+            Display.print_info("Cancelled")
             Display.pause()
             return
         
-        # 更新状态
+        # Update status
         success, message = RoomService.update_room_status(
             room['room_id'],
             new_status,
@@ -872,29 +872,29 @@ class HRMSMenu:
         Display.pause()
     
     def add_room(self):
-        """添加房间"""
+        """Add room"""
         Display.clear_screen()
-        Display.print_header("添加房间")
+        Display.print_header("Add Room")
         
-        # 显示房型列表
+        # Display room type list
         room_types = RoomService.get_room_types()
         Display.print_table(
-            [{'ID': rt['room_type_id'], '房型': rt['type_name'], 
-              '价格': Display.format_currency(rt['base_price'])} 
+            [{'ID': rt['room_type_id'], 'Room Type': rt['type_name'], 
+              'Price': Display.format_currency(rt['base_price'])} 
              for rt in room_types],
-            title="可用房型"
+            title="Available Room Types"
         )
         
-        room_number = Display.get_input("房间号")
-        room_type_id = Display.get_input("房型ID", int)
-        floor = Display.get_input("楼层", int)
+        room_number = Display.get_input("Room number")
+        room_type_id = Display.get_input("Room type ID", int)
+        floor = Display.get_input("Floor", int)
         
         if not all([room_number, room_type_id, floor]):
-            Display.print_error("信息不完整")
+            Display.print_error("Information incomplete")
             Display.pause()
             return
         
-        # 添加房间
+        # Add room
         success, message, room_id = RoomService.add_room(
             room_number,
             room_type_id,
@@ -910,16 +910,16 @@ class HRMSMenu:
         Display.pause()
     
     def room_type_menu(self):
-        """房型管理菜单"""
+        """Room type management menu"""
         while True:
             Display.clear_screen()
             options = [
-                "查看所有房型",
-                "添加房型",
-                "修改房型"
+                "View All Room Types",
+                "Add Room Type",
+                "Update Room Type"
             ]
             
-            Display.print_menu("房型管理", options)
+            Display.print_menu("Room Type Management", options)
             choice = Display.get_choice(len(options))
             
             if choice == 0:
@@ -932,39 +932,39 @@ class HRMSMenu:
                 self.update_room_type()
     
     def view_room_types(self):
-        """查看所有房型"""
+        """View all room types"""
         Display.clear_screen()
         
         room_types = RoomService.get_room_types()
         
         display_data = [{
             'ID': rt['room_type_id'],
-            '房型名称': rt['type_name'],
-            '基础价格': Display.format_currency(rt['base_price']),
-            '最大入住': rt['max_occupancy'],
-            '描述': rt['description'][:30] + '...' if len(rt['description']) > 30 else rt['description']
+            'Room Type Name': rt['type_name'],
+            'Base Price': Display.format_currency(rt['base_price']),
+            'Max Occupancy': rt['max_occupancy'],
+            'Description': rt['description'][:30] + '...' if len(rt['description']) > 30 else rt['description']
         } for rt in room_types]
         
-        Display.print_table(display_data, title="房型列表")
+        Display.print_table(display_data, title="Room Type List")
         Display.pause()
     
     def add_room_type(self):
-        """添加房型"""
+        """Add room type"""
         Display.clear_screen()
-        Display.print_header("添加房型")
+        Display.print_header("Add Room Type")
         
-        type_name = Display.get_input("房型名称")
-        description = Display.get_input("描述")
-        base_price = Display.get_input("基础价格", float)
-        max_occupancy = Display.get_input("最大入住人数", int)
-        amenities = Display.get_input("设施（用逗号分隔）")
+        type_name = Display.get_input("Room type name")
+        description = Display.get_input("Description")
+        base_price = Display.get_input("Base price", float)
+        max_occupancy = Display.get_input("Maximum occupancy", int)
+        amenities = Display.get_input("Amenities (comma separated)")
         
         if not all([type_name, description, base_price, max_occupancy, amenities]):
-            Display.print_error("信息不完整")
+            Display.print_error("Information incomplete")
             Display.pause()
             return
         
-        # 添加房型
+        # Add room type
         success, message, room_type_id = RoomService.add_room_type(
             type_name, description, base_price,
             max_occupancy, amenities,
@@ -979,33 +979,33 @@ class HRMSMenu:
         Display.pause()
     
     def update_room_type(self):
-        """修改房型"""
+        """Update room type"""
         Display.clear_screen()
-        Display.print_header("修改房型")
+        Display.print_header("Update Room Type")
         
-        # 显示房型列表
+        # Display room type list
         self.view_room_types()
         
-        room_type_id = Display.get_input("房型ID", int)
+        room_type_id = Display.get_input("Room type ID", int)
         if not room_type_id:
             return
         
-        # 获取当前房型
+        # Get current room type
         room_type = RoomService.get_room_type_by_id(room_type_id)
         if not room_type:
-            Display.print_error("房型不存在")
+            Display.print_error("Room type does not exist")
             Display.pause()
             return
         
-        Display.print_info("请输入新值（留空保持不变）:")
+        Display.print_info("Enter new values (leave empty to keep unchanged):")
         
-        new_name = Display.get_input(f"房型名称 (当前: {room_type['type_name']})", allow_empty=True)
-        new_desc = Display.get_input(f"描述 (当前: {room_type['description'][:30]}...)", allow_empty=True)
-        new_price = Display.get_input(f"基础价格 (当前: {room_type['base_price']})", float, allow_empty=True)
-        new_occupancy = Display.get_input(f"最大入住 (当前: {room_type['max_occupancy']})", int, allow_empty=True)
-        new_amenities = Display.get_input(f"设施", allow_empty=True)
+        new_name = Display.get_input(f"Room type name (current: {room_type['type_name']})", allow_empty=True)
+        new_desc = Display.get_input(f"Description (current: {room_type['description'][:30]}...)", allow_empty=True)
+        new_price = Display.get_input(f"Base price (current: {room_type['base_price']})", float, allow_empty=True)
+        new_occupancy = Display.get_input(f"Max occupancy (current: {room_type['max_occupancy']})", int, allow_empty=True)
+        new_amenities = Display.get_input(f"Amenities", allow_empty=True)
         
-        # 更新房型
+        # Update room type
         success, message = RoomService.update_room_type(
             room_type_id,
             type_name=new_name or None,
@@ -1023,19 +1023,19 @@ class HRMSMenu:
         
         Display.pause()
     
-    # ==================== 定价管理菜单 ====================
+    # ==================== Pricing Management Menu ====================
     
     def pricing_menu(self):
-        """定价管理菜单"""
+        """Pricing management menu"""
         while True:
             Display.clear_screen()
             options = [
-                "查看季节性定价",
-                "添加季节性定价",
-                "删除季节性定价"
+                "View Seasonal Pricing",
+                "Add Seasonal Pricing",
+                "Delete Seasonal Pricing"
             ]
             
-            Display.print_menu("定价配置", options)
+            Display.print_menu("Pricing Configuration", options)
             choice = Display.get_choice(len(options))
             
             if choice == 0:
@@ -1048,63 +1048,63 @@ class HRMSMenu:
                 self.delete_seasonal_pricing()
     
     def view_seasonal_pricing(self):
-        """查看季节性定价"""
+        """View seasonal pricing"""
         Display.clear_screen()
         
         pricing_rules = PricingService.list_seasonal_pricing()
         
         if not pricing_rules:
-            Display.print_warning("没有季节性定价规则")
+            Display.print_warning("No seasonal pricing rules")
         else:
             display_data = [{
                 'ID': pr['pricing_id'],
-                '房型': pr['type_name'],
-                '季节': pr['season_name'],
-                '开始日期': pr['start_date'],
-                '结束日期': pr['end_date'],
-                '价格乘数': pr['price_multiplier'] or '-',
-                '固定价格': Display.format_currency(pr['fixed_price']) if pr['fixed_price'] else '-'
+                'Room Type': pr['type_name'],
+                'Season': pr['season_name'],
+                'Start Date': pr['start_date'],
+                'End Date': pr['end_date'],
+                'Price Multiplier': pr['price_multiplier'] or '-',
+                'Fixed Price': Display.format_currency(pr['fixed_price']) if pr['fixed_price'] else '-'
             } for pr in pricing_rules]
             
-            Display.print_table(display_data, title="季节性定价规则")
+            Display.print_table(display_data, title="Seasonal Pricing Rules")
         
         Display.pause()
     
     def add_seasonal_pricing(self):
-        """添加季节性定价"""
+        """Add seasonal pricing"""
         Display.clear_screen()
-        Display.print_header("添加季节性定价")
+        Display.print_header("Add Seasonal Pricing")
         
-        # 显示房型列表
+        # Display room type list
         room_types = RoomService.get_room_types()
         Display.print_table(
-            [{'ID': rt['room_type_id'], '房型': rt['type_name'], 
-              '基础价格': Display.format_currency(rt['base_price'])} 
+            [{'ID': rt['room_type_id'], 'Room Type': rt['type_name'], 
+              'Base Price': Display.format_currency(rt['base_price'])} 
              for rt in room_types],
-            title="房型列表"
+            title="Room Type List"
         )
         
-        room_type_id = Display.get_input("房型ID", int)
-        season_name = Display.get_input("季节名称")
-        start_date = Display.get_input("开始日期 (YYYY-MM-DD)")
-        end_date = Display.get_input("结束日期 (YYYY-MM-DD)")
+        room_type_id = Display.get_input("Room type ID", int)
+        season_name = Display.get_input("Season name")
+        start_date = Display.get_input("Start date (YYYY-MM-DD)")
+        end_date = Display.get_input("End date (YYYY-MM-DD)")
         
-        Display.print_info("定价方式: 1-价格乘数, 2-固定价格")
-        pricing_type = Display.get_input("选择定价方式", int)
+        Display.print_info("Pricing method: 1-Price multiplier, 2-Fixed price")
+        pricing_type = Display.get_input("Select pricing method", int)
         
         price_multiplier = None
         fixed_price = None
         
         if pricing_type == 1:
-            price_multiplier = Display.get_input("价格乘数 (例如: 1.5表示150%)", float)
+            price_multiplier = Display.get_input("Price multiplier (e.g.: 1.5 means 150%)", float)
         elif pricing_type == 2:
-            fixed_price = Display.get_input("固定价格", float)
+            fixed_price = Display.get_input("Fixed price", float)
         else:
-            Display.print_error("无效的定价方式")
+            Display.print_error("Invalid pricing method")
             Display.pause()
             return
         
-        # 添加定价规则
+        # Add pricing rule
         success, message, pricing_id = PricingService.add_seasonal_pricing(
             room_type_id, season_name, start_date, end_date,
             price_multiplier, fixed_price,
@@ -1119,23 +1119,23 @@ class HRMSMenu:
         Display.pause()
     
     def delete_seasonal_pricing(self):
-        """删除季节性定价"""
+        """Delete seasonal pricing"""
         Display.clear_screen()
-        Display.print_header("删除季节性定价")
+        Display.print_header("Delete Seasonal Pricing")
         
-        # 显示现有定价规则
+        # Display existing pricing rules
         self.view_seasonal_pricing()
         
-        pricing_id = Display.get_input("定价规则ID", int)
+        pricing_id = Display.get_input("Pricing rule ID", int)
         if not pricing_id:
             return
         
-        if not Display.confirm("确认删除此定价规则?"):
-            Display.print_info("已取消")
+        if not Display.confirm("Confirm deleting this pricing rule?"):
+            Display.print_info("Cancelled")
             Display.pause()
             return
         
-        # 删除定价规则
+        # Delete pricing rule
         success, message = PricingService.delete_seasonal_pricing(
             pricing_id,
             self.current_user['user_id']
@@ -1148,20 +1148,20 @@ class HRMSMenu:
         
         Display.pause()
     
-    # ==================== 报表管理菜单 ====================
+    # ==================== Report Management Menu ====================
     
     def report_menu(self):
-        """报表管理菜单"""
+        """Report management menu"""
         while True:
             Display.clear_screen()
             options = [
-                "入住率报表",
-                "收入报表",
-                "审计日志查询",
-                "数据库备份"
+                "Occupancy Report",
+                "Revenue Report",
+                "Audit Log Query",
+                "Database Backup"
             ]
             
-            Display.print_menu("报表管理", options)
+            Display.print_menu("Report Management", options)
             choice = Display.get_choice(len(options))
             
             if choice == 0:
@@ -1176,17 +1176,17 @@ class HRMSMenu:
                 self.backup_database()
     
     def occupancy_report(self):
-        """入住率报表"""
+        """Occupancy report"""
         Display.clear_screen()
-        Display.print_header("入住率报表")
+        Display.print_header("Occupancy Report")
         
-        start_date = Display.get_input("开始日期 (YYYY-MM-DD)")
-        end_date = Display.get_input("结束日期 (YYYY-MM-DD)")
+        start_date = Display.get_input("Start date (YYYY-MM-DD)")
+        end_date = Display.get_input("End date (YYYY-MM-DD)")
         
         if not start_date or not end_date:
             return
         
-        # 生成报表
+        # Generate report
         report = ReportService.generate_occupancy_report(start_date, end_date)
         
         if 'error' in report:
@@ -1194,51 +1194,51 @@ class HRMSMenu:
             Display.pause()
             return
         
-        # 显示摘要
-        Display.print_subheader("报表摘要")
+        # Display summary
+        Display.print_subheader("Report Summary")
         Display.print_detail({
-            '报表期间': f"{report['start_date']} 至 {report['end_date']}",
-            '总房间数': report['total_rooms'],
-            '报表天数': report['days'],
-            '平均入住率': Display.format_percentage(report['average_occupancy_rate'])
+            'Report Period': f"{report['start_date']} to {report['end_date']}",
+            'Total Rooms': report['total_rooms'],
+            'Report Days': report['days'],
+            'Average Occupancy Rate': Display.format_percentage(report['average_occupancy_rate'])
         })
         
-        # 显示每日数据（前10天）
+        # Display daily data (first 10 days)
         if report['daily_data']:
             display_data = [{
-                '日期': day['date'],
-                '总房间': day['total_rooms'],
-                '已占用': day['occupied_rooms'],
-                '可用': day['available_rooms'],
-                '入住率': Display.format_percentage(day['occupancy_rate'])
+                'Date': day['date'],
+                'Total Rooms': day['total_rooms'],
+                'Occupied': day['occupied_rooms'],
+                'Available': day['available_rooms'],
+                'Occupancy Rate': Display.format_percentage(day['occupancy_rate'])
             } for day in report['daily_data'][:10]]
             
-            Display.print_table(display_data, title="每日入住情况（前10天）")
+            Display.print_table(display_data, title="Daily Occupancy (First 10 Days)")
         
-        # 询问是否导出
-        if Display.confirm("是否导出为CSV文件?"):
+        # Ask if export
+        if Display.confirm("Export to CSV file?"):
             filename = f"occupancy_report_{start_date}_{end_date}.csv"
             success, result = ReportService.export_to_csv(report, filename, 'occupancy')
             
             if success:
-                Display.print_success(f"报表已导出: {result}")
+                Display.print_success(f"Report exported: {result}")
             else:
                 Display.print_error(result)
         
         Display.pause()
     
     def revenue_report(self):
-        """收入报表"""
+        """Revenue report"""
         Display.clear_screen()
-        Display.print_header("收入报表")
+        Display.print_header("Revenue Report")
         
-        start_date = Display.get_input("开始日期 (YYYY-MM-DD)")
-        end_date = Display.get_input("结束日期 (YYYY-MM-DD)")
+        start_date = Display.get_input("Start date (YYYY-MM-DD)")
+        end_date = Display.get_input("End date (YYYY-MM-DD)")
         
         if not start_date or not end_date:
             return
         
-        # 生成报表
+        # Generate report
         report = ReportService.generate_revenue_report(start_date, end_date)
         
         if 'error' in report:
@@ -1246,62 +1246,62 @@ class HRMSMenu:
             Display.pause()
             return
         
-        # 显示摘要
-        Display.print_subheader("收入摘要")
+        # Display summary
+        Display.print_subheader("Revenue Summary")
         Display.print_detail({
-            '报表期间': f"{report['start_date']} 至 {report['end_date']}",
-            '总预订数': report['total_reservations'],
-            '总收入': Display.format_currency(report['total_revenue']),
-            '平均每预订收入': Display.format_currency(report['average_revenue_per_reservation'])
+            'Report Period': f"{report['start_date']} to {report['end_date']}",
+            'Total Reservations': report['total_reservations'],
+            'Total Revenue': Display.format_currency(report['total_revenue']),
+            'Average Revenue per Reservation': Display.format_currency(report['average_revenue_per_reservation'])
         })
         
-        # 按房型统计
+        # Statistics by room type
         if report['by_room_type']:
             Display.print_table(
                 [{
-                    '房型': item['room_type'],
-                    '预订数': item['reservations'],
-                    '收入': Display.format_currency(item['revenue'])
+                    'Room Type': item['room_type'],
+                    'Reservations': item['reservations'],
+                    'Revenue': Display.format_currency(item['revenue'])
                 } for item in report['by_room_type']],
-                title="按房型统计"
+                title="Statistics by Room Type"
             )
         
-        # 按支付方式统计
+        # Statistics by payment method
         if report['by_payment_method']:
             Display.print_table(
                 [{
-                    '支付方式': item['payment_method'],
-                    '交易数': item['count'],
-                    '金额': Display.format_currency(item['amount'])
+                    'Payment Method': item['payment_method'],
+                    'Transactions': item['count'],
+                    'Amount': Display.format_currency(item['amount'])
                 } for item in report['by_payment_method']],
-                title="按支付方式统计"
+                title="Statistics by Payment Method"
             )
         
-        # 询问是否导出
-        if Display.confirm("是否导出为CSV文件?"):
+        # Ask if export
+        if Display.confirm("Export to CSV file?"):
             filename = f"revenue_report_{start_date}_{end_date}.csv"
             success, result = ReportService.export_to_csv(report, filename, 'revenue')
             
             if success:
-                Display.print_success(f"报表已导出: {result}")
+                Display.print_success(f"Report exported: {result}")
             else:
                 Display.print_error(result)
         
         Display.pause()
     
     def view_audit_logs(self):
-        """查看审计日志"""
+        """View audit logs"""
         Display.clear_screen()
-        Display.print_header("审计日志查询")
+        Display.print_header("Audit Log Query")
         
-        Display.print_info("请输入查询条件（留空跳过）:")
+        Display.print_info("Enter search criteria (leave empty to skip):")
         
-        operation_type = Display.get_input("操作类型 (CREATE/UPDATE/DELETE等)", allow_empty=True)
-        table_name = Display.get_input("表名", allow_empty=True)
-        start_date = Display.get_input("开始日期 (YYYY-MM-DD)", allow_empty=True)
-        end_date = Display.get_input("结束日期 (YYYY-MM-DD)", allow_empty=True)
+        operation_type = Display.get_input("Operation type (CREATE/UPDATE/DELETE etc.)", allow_empty=True)
+        table_name = Display.get_input("Table name", allow_empty=True)
+        start_date = Display.get_input("Start date (YYYY-MM-DD)", allow_empty=True)
+        end_date = Display.get_input("End date (YYYY-MM-DD)", allow_empty=True)
         
-        # 查询日志
+        # Query logs
         logs = ReportService.get_audit_logs(
             operation_type=operation_type or None,
             table_name=table_name or None,
@@ -1311,34 +1311,34 @@ class HRMSMenu:
         )
         
         if not logs:
-            Display.print_warning("没有找到匹配的日志")
+            Display.print_warning("No matching logs found")
         else:
             display_data = [{
-                '时间': Display.format_datetime(log['timestamp']),
-                '用户': log['username'],
-                '操作': log['operation_type'],
-                '表': log['table_name'] or '-',
-                '记录ID': log['record_id'] or '-',
-                '描述': (log['description'][:40] + '...') if log['description'] and len(log['description']) > 40 else log['description']
+                'Time': Display.format_datetime(log['timestamp']),
+                'User': log['username'],
+                'Operation': log['operation_type'],
+                'Table': log['table_name'] or '-',
+                'Record ID': log['record_id'] or '-',
+                'Description': (log['description'][:40] + '...') if log['description'] and len(log['description']) > 40 else log['description']
             } for log in logs]
             
-            Display.print_table(display_data, title=f"审计日志（最近{len(logs)}条）")
+            Display.print_table(display_data, title=f"Audit Logs (Latest {len(logs)} entries)")
         
         Display.pause()
     
     def backup_database(self):
-        """数据库备份"""
+        """Database backup"""
         Display.clear_screen()
-        Display.print_header("数据库备份")
+        Display.print_header("Database Backup")
         
-        backup_name = Display.get_input("备份文件名", default="hrms_backup")
+        backup_name = Display.get_input("Backup filename", default="hrms_backup")
         
-        if not Display.confirm("确认执行数据库备份?"):
-            Display.print_info("已取消")
+        if not Display.confirm("Confirm database backup?"):
+            Display.print_info("Cancelled")
             Display.pause()
             return
         
-        Display.print_info("正在备份数据库...")
+        Display.print_info("Backing up database...")
         
         success, result = ReportService.backup_database(
             backup_name,
@@ -1346,25 +1346,25 @@ class HRMSMenu:
         )
         
         if success:
-            Display.print_success(f"数据库备份成功: {result}")
+            Display.print_success(f"Database backup successful: {result}")
         else:
             Display.print_error(result)
         
         Display.pause()
     
-    # ==================== 系统管理菜单 ====================
+    # ==================== System Management Menu ====================
     
     def system_menu(self):
-        """系统管理菜单"""
+        """System management menu"""
         while True:
             Display.clear_screen()
             options = [
-                "修改密码",
-                "查看备份历史",
-                "系统统计"
+                "Change Password",
+                "View Backup History",
+                "System Statistics"
             ]
             
-            Display.print_menu("系统管理", options)
+            Display.print_menu("System Management", options)
             choice = Display.get_choice(len(options))
             
             if choice == 0:
@@ -1377,25 +1377,25 @@ class HRMSMenu:
                 self.system_statistics()
     
     def change_password(self):
-        """修改密码"""
+        """Change password"""
         Display.clear_screen()
-        Display.print_header("修改密码")
+        Display.print_header("Change Password")
         
-        old_password = Display.get_input("当前密码")
-        new_password = Display.get_input("新密码")
-        confirm_password = Display.get_input("确认新密码")
+        old_password = Display.get_input("Current password")
+        new_password = Display.get_input("New password")
+        confirm_password = Display.get_input("Confirm new password")
         
         if not all([old_password, new_password, confirm_password]):
-            Display.print_error("信息不完整")
+            Display.print_error("Information incomplete")
             Display.pause()
             return
         
         if new_password != confirm_password:
-            Display.print_error("两次输入的新密码不一致")
+            Display.print_error("New passwords do not match")
             Display.pause()
             return
         
-        # 修改密码
+        # Change password
         success, message = AuthService.change_password(
             self.current_user['user_id'],
             old_password,
@@ -1410,69 +1410,69 @@ class HRMSMenu:
         Display.pause()
     
     def view_backup_history(self):
-        """查看备份历史"""
+        """View backup history"""
         Display.clear_screen()
         
         backups = ReportService.list_backups()
         
         if not backups:
-            Display.print_warning("没有备份记录")
+            Display.print_warning("No backup records")
         else:
             display_data = [{
                 'ID': backup['backup_id'],
-                '文件名': backup['backup_file'].split('/')[-1] if '/' in backup['backup_file'] else backup['backup_file'],
-                '大小(KB)': f"{backup['backup_size'] / 1024:.2f}" if backup['backup_size'] else '-',
-                '类型': backup['backup_type'],
-                '状态': backup['status'],
-                '创建者': backup['username'],
-                '时间': Display.format_datetime(backup['created_at'])
+                'Filename': backup['backup_file'].split('/')[-1] if '/' in backup['backup_file'] else backup['backup_file'],
+                'Size(KB)': f"{backup['backup_size'] / 1024:.2f}" if backup['backup_size'] else '-',
+                'Type': backup['backup_type'],
+                'Status': backup['status'],
+                'Created By': backup['username'],
+                'Time': Display.format_datetime(backup['created_at'])
             } for backup in backups]
             
-            Display.print_table(display_data, title="备份历史")
+            Display.print_table(display_data, title="Backup History")
         
         Display.pause()
     
     def system_statistics(self):
-        """系统统计"""
+        """System statistics"""
         Display.clear_screen()
-        Display.print_header("系统统计")
+        Display.print_header("System Statistics")
         
-        # 房间统计
+        # Room statistics
         room_stats = RoomService.get_room_statistics()
-        Display.print_subheader("房间状态统计")
+        Display.print_subheader("Room Status Statistics")
         Display.print_detail({
-            '总房间数': room_stats.get('total_rooms', 0),
-            '清洁可用': room_stats.get('clean_rooms', 0),
-            '脏污待清洁': room_stats.get('dirty_rooms', 0),
-            '已占用': room_stats.get('occupied_rooms', 0),
-            '维护中': room_stats.get('maintenance_rooms', 0)
+            'Total Rooms': room_stats.get('total_rooms', 0),
+            'Clean Available': room_stats.get('clean_rooms', 0),
+            'Dirty for Cleaning': room_stats.get('dirty_rooms', 0),
+            'Occupied': room_stats.get('occupied_rooms', 0),
+            'Under Maintenance': room_stats.get('maintenance_rooms', 0)
         })
         
-        # 今日预订统计
+        # Today's reservation statistics
         today_checkins = ReservationService.get_upcoming_checkins(days=0)
         current_guests = ReservationService.get_current_checkins()
         
-        Display.print_subheader("预订统计")
+        Display.print_subheader("Reservation Statistics")
         Display.print_detail({
-            '今日预计入住': len(today_checkins),
-            '当前在住客人': len(current_guests)
+            'Expected Check-ins Today': len(today_checkins),
+            'Current Guests': len(current_guests)
         })
         
-        # 活动会话
+        # Active sessions
         active_sessions = AuthService.get_active_sessions_count()
-        Display.print_subheader("系统状态")
+        Display.print_subheader("System Status")
         Display.print_detail({
-            '活动会话数': active_sessions
+            'Active Sessions': active_sessions
         })
         
         Display.pause()
     
     @staticmethod
     def _get_role_name(role: str) -> str:
-        """获取角色中文名"""
+        """Get role English name"""
         role_names = {
-            'admin': '管理员',
-            'front_desk': '前台员工',
-            'housekeeping': '客房员工'
+            'admin': 'Administrator',
+            'front_desk': 'Front Desk Staff',
+            'housekeeping': 'Housekeeping Staff'
         }
         return role_names.get(role, role)

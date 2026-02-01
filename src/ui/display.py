@@ -1,77 +1,77 @@
 """
-显示工具模块
-提供CLI界面的格式化输出功能
+Display Utility Module
+Provides formatted output functionality for CLI interface
 """
 
 from typing import List, Dict, Any
 from tabulate import tabulate
 from colorama import Fore, Style, init
 
-# 初始化colorama（Windows支持）
+# Initialize colorama (Windows support)
 init(autoreset=True)
 
 
 class Display:
-    """CLI显示工具类"""
-    
+    """CLI Display Utility Class"""
+
     @staticmethod
     def print_header(text: str):
-        """打印标题"""
+        """Print header"""
         print(f"\n{Fore.CYAN}{'='*70}")
         print(f"{text:^70}")
         print(f"{'='*70}{Style.RESET_ALL}\n")
-    
+
     @staticmethod
     def print_subheader(text: str):
-        """打印子标题"""
+        """Print subheader"""
         print(f"\n{Fore.YELLOW}{'-'*70}")
         print(f"{text}")
         print(f"{'-'*70}{Style.RESET_ALL}\n")
-    
+
     @staticmethod
     def print_success(message: str):
-        """打印成功消息"""
+        """Print success message"""
         print(f"{Fore.GREEN}✓ {message}{Style.RESET_ALL}")
-    
+
     @staticmethod
     def print_error(message: str):
-        """打印错误消息"""
+        """Print error message"""
         print(f"{Fore.RED}✗ {message}{Style.RESET_ALL}")
-    
+
     @staticmethod
     def print_info(message: str):
-        """打印信息消息"""
+        """Print info message"""
         print(f"{Fore.BLUE}ℹ {message}{Style.RESET_ALL}")
-    
+
     @staticmethod
     def print_warning(message: str):
-        """打印警告消息"""
+        """Print warning message"""
         print(f"{Fore.YELLOW}⚠ {message}{Style.RESET_ALL}")
     
     @staticmethod
     def print_table(data: List[Dict[str, Any]], headers: List[str] = None,
                    title: str = None, tablefmt: str = 'grid'):
         """
-        打印表格
+        Print table
         
         Args:
-            data: 数据列表
-            headers: 表头列表（如果为None，使用字典的键）
-            title: 表格标题
-            tablefmt: 表格格式
+            data: Data list
+            headers: Header list (if None, use dictionary keys)
+            title: Table title
+            tablefmt: Table format
         """
         if not data:
-            Display.print_warning("没有数据可显示")
+            Display.print_warning("No data to display")
             return
         
         if title:
             Display.print_subheader(title)
         
-        # 如果没有指定headers，使用第一行数据的键
+        # If no headers specified, use keys from first row of data
         if headers is None and data:
             headers = list(data[0].keys())
         
-        # 提取表格数据
+        # Extract table data
         table_data = []
         for row in data:
             if isinstance(row, dict):
@@ -85,11 +85,11 @@ class Display:
     @staticmethod
     def print_detail(data: Dict[str, Any], title: str = None):
         """
-        打印详细信息（键值对形式）
+        Print detailed information (key-value pairs)
         
         Args:
-            data: 数据字典
-            title: 标题
+            data: Data dictionary
+            title: Title
         """
         if title:
             Display.print_subheader(title)
@@ -104,12 +104,12 @@ class Display:
     @staticmethod
     def print_menu(title: str, options: List[str], show_back: bool = True):
         """
-        打印菜单
+        Print menu
         
         Args:
-            title: 菜单标题
-            options: 选项列表
-            show_back: 是否显示返回选项
+            title: Menu title
+            options: Options list
+            show_back: Whether to show back option
         """
         Display.print_header(title)
         
@@ -117,9 +117,9 @@ class Display:
             print(f"{Fore.CYAN}[{i}]{Style.RESET_ALL} {option}")
         
         if show_back:
-            print(f"{Fore.CYAN}[0]{Style.RESET_ALL} 返回上级菜单")
+            print(f"{Fore.CYAN}[0]{Style.RESET_ALL} Return to previous menu")
         else:
-            print(f"{Fore.CYAN}[0]{Style.RESET_ALL} 退出系统")
+            print(f"{Fore.CYAN}[0]{Style.RESET_ALL} Exit system")
         
         print()
     
@@ -127,86 +127,86 @@ class Display:
     def get_input(prompt: str, input_type: type = str, 
                  default: Any = None, allow_empty: bool = False):
         """
-        获取用户输入
+        Get user input
         
         Args:
-            prompt: 提示信息
-            input_type: 输入类型（str, int, float等）
-            default: 默认值
-            allow_empty: 是否允许空输入
+            prompt: Prompt message
+            input_type: Input type (str, int, float, etc.)
+            default: Default value
+            allow_empty: Whether to allow empty input
             
         Returns:
-            用户输入的值
+            User input value
         """
         while True:
             try:
-                default_text = f" (默认: {default})" if default is not None else ""
+                default_text = f" (default: {default})" if default is not None else ""
                 user_input = input(f"{Fore.GREEN}>{Style.RESET_ALL} {prompt}{default_text}: ").strip()
                 
-                # 如果有默认值且用户输入为空，返回默认值
+                # If default value exists and user input is empty, return default
                 if not user_input and default is not None:
                     return default
                 
-                # 如果允许空输入且用户输入为空
+                # If empty input is allowed and user input is empty
                 if not user_input and allow_empty:
                     return None if input_type == str else user_input
                 
-                # 如果不允许空输入且用户输入为空
+                # If empty input is not allowed and user input is empty
                 if not user_input:
-                    Display.print_error("输入不能为空，请重新输入")
+                    Display.print_error("Input cannot be empty, please try again")
                     continue
                 
-                # 类型转换
+                # Type conversion
                 if input_type == bool:
-                    return user_input.lower() in ['y', 'yes', '是', 'true', '1']
+                    return user_input.lower() in ['y', 'yes', 'true', '1']
                 elif input_type == str:
                     return user_input
                 else:
                     return input_type(user_input)
                     
             except ValueError:
-                Display.print_error(f"输入格式错误，请输入{input_type.__name__}类型的值")
+                Display.print_error(f"Input format error, please enter a value of type {input_type.__name__}")
             except KeyboardInterrupt:
                 print()
-                Display.print_warning("操作已取消")
+                Display.print_warning("Operation cancelled")
                 return None
     
     @staticmethod
     def get_choice(max_choice: int, min_choice: int = 0) -> int:
         """
-        获取菜单选择
+        Get menu choice
         
         Args:
-            max_choice: 最大选项数
-            min_choice: 最小选项数（通常为0，表示返回）
+            max_choice: Maximum choice number
+            min_choice: Minimum choice number (usually 0 for back)
             
         Returns:
-            用户选择的选项号
+            User's selected choice number
         """
         while True:
             try:
-                choice = int(input(f"{Fore.GREEN}>{Style.RESET_ALL} 请选择 ({min_choice}-{max_choice}): "))
+                choice = int(input(f"{Fore.GREEN}>{Style.RESET_ALL} Please select ({min_choice}-{max_choice}): "))
                 if min_choice <= choice <= max_choice:
                     return choice
                 else:
-                    Display.print_error(f"请输入 {min_choice} 到 {max_choice} 之间的数字")
+                    Display.print_error(f"Please enter a number between {min_choice} and {max_choice}")
             except ValueError:
-                Display.print_error("请输入有效的数字")
+                Display.print_error("Please enter a valid number")
             except KeyboardInterrupt:
                 print()
-                return 0  # 返回上级
+                return 0  # Return to previous level
     
     @staticmethod
     def confirm(message: str, default: bool = False) -> bool:
         """
-        确认对话框
+        Confirmation dialog
         
         Args:
-            message: 确认消息
-            default: 默认值
+            message: Confirmation message
+            default: Default value
             
         Returns:
-            用户确认结果
+            User confirmation result
         """
         default_text = "(Y/n)" if default else "(y/N)"
         user_input = input(f"{Fore.YELLOW}?{Style.RESET_ALL} {message} {default_text}: ").strip().lower()
@@ -214,31 +214,31 @@ class Display:
         if not user_input:
             return default
         
-        return user_input in ['y', 'yes', '是']
+        return user_input in ['y', 'yes']
     
     @staticmethod
     def pause():
-        """暂停，等待用户按键继续"""
-        input(f"\n{Fore.CYAN}按回车键继续...{Style.RESET_ALL}")
+        """Pause, wait for user to press key to continue"""
+        input(f"\n{Fore.CYAN}Press Enter to continue...{Style.RESET_ALL}")
     
     @staticmethod
     def clear_screen():
-        """清屏"""
+        """Clear screen"""
         import os
         os.system('cls' if os.name == 'nt' else 'clear')
     
     @staticmethod
     def print_separator(char: str = '-', length: int = 70):
-        """打印分隔线"""
+        """Print separator line"""
         print(char * length)
     
     @staticmethod
     def print_logo():
-        """打印系统Logo"""
+        """Print system logo"""
         logo = f"""{Fore.CYAN}
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║           酒店预订管理系统 (HRMS) - CLI 版本                     ║
+║           Hotel Reservation Management System (HRMS) - CLI Version                     ║
 ║           Hotel Reservation Management System                     ║
 ║                                                                   ║
 ║                          Version 1.0                              ║
@@ -249,34 +249,34 @@ class Display:
     
     @staticmethod
     def format_currency(amount: float) -> str:
-        """格式化货币"""
+        """Format currency"""
         return f"¥{amount:,.2f}"
     
     @staticmethod
     def format_percentage(value: float) -> str:
-        """格式化百分比"""
+        """Format percentage"""
         return f"{value:.2f}%"
     
     @staticmethod
     def format_date(date_str: str) -> str:
-        """格式化日期显示"""
+        """Format date display"""
         try:
             from datetime import datetime
             date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-            return date_obj.strftime('%Y年%m月%d日')
+            return date_obj.strftime('%Y-%m-%d')
         except:
             return date_str
     
     @staticmethod
     def format_datetime(datetime_str: str) -> str:
-        """格式化日期时间显示"""
+        """Format datetime display"""
         try:
             from datetime import datetime
-            # 尝试多种格式
+            # Try multiple formats
             for fmt in ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M:%S.%f']:
                 try:
                     dt_obj = datetime.strptime(datetime_str, fmt)
-                    return dt_obj.strftime('%Y年%m月%d日 %H:%M:%S')
+                    return dt_obj.strftime('%Y-%m-%d %H:%M:%S')
                 except:
                     continue
             return datetime_str
@@ -285,7 +285,7 @@ class Display:
     
     @staticmethod
     def print_box(content: str, width: int = 70):
-        """打印带边框的内容"""
+        """Print content with border"""
         lines = content.split('\n')
         print(f"{Fore.CYAN}┌{'─' * (width - 2)}┐{Style.RESET_ALL}")
         for line in lines:
