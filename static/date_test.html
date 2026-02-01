@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Language" content="en" />
+    <title>Date Input Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 50px;
+      }
+      input[type="date"] {
+        padding: 10px;
+        font-size: 16px;
+        border: 2px solid #ccc;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Date Input Test</h1>
+    <p>This page tests if date inputs display in English format:</p>
+
+    <label for="test-date">Test Date:</label>
+    <input
+      type="date"
+      id="test-date"
+      placeholder="YYYY-MM-DD"
+      pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}"
+      lang="en"
+    />
+
+    <script>
+      // Set today as default
+      document.getElementById("test-date").valueAsDate = new Date();
+
+      // Log the locale for debugging
+      console.log("Browser language:", navigator.language);
+      console.log("Browser languages:", navigator.languages);
+    </script>
+  </body>
+</html>

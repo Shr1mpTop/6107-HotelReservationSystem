@@ -97,6 +97,12 @@ async def login_page(request: Request):
     """Serve the login page"""
     return templates.TemplateResponse("login.html", {"request": request})
 
+@app.get("/test-date", response_class=HTMLResponse)
+async def date_test_page(request: Request):
+    """Serve the date input test page"""
+    from fastapi.responses import FileResponse
+    return FileResponse("static/date_test.html")
+
 # API Endpoints
 @app.post("/api/auth/login", response_model=LoginResponse)
 async def login(login_data: LoginRequest):
@@ -128,7 +134,7 @@ async def logout(current_user: UserInfo = Depends(get_current_user)):
 async def get_rooms(current_user: UserInfo = Depends(get_current_user)):
     """Get all rooms with their details"""
     try:
-        rooms = RoomService.get_all_rooms_with_types()
+        rooms = RoomService.list_all_rooms()
         return {"success": True, "data": rooms}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -169,7 +175,22 @@ async def update_room_status(
 async def get_reservations(current_user: UserInfo = Depends(get_current_user)):
     """Get all reservations"""
     try:
-        reservations = ReservationService.get_all_reservations()
+        # Use a query to get all reservations with guest and room details
+        query = """
+            SELECT 
+                r.reservation_id, r.check_in_date, r.check_out_date, r.num_guests,
+                r.total_price, r.status, r.special_requests, r.created_at,
+                g.first_name as guest_first_name, g.last_name as guest_last_name,
+                g.email as guest_email, g.phone as guest_phone,
+                rm.room_number, rt.type_name as room_type
+            FROM reservations r
+            JOIN guests g ON r.guest_id = g.guest_id
+            JOIN rooms rm ON r.room_id = rm.room_id
+            JOIN room_types rt ON rm.room_type_id = rt.room_type_id
+            ORDER BY r.created_at DESC
+        """
+        result = db_manager.execute_query(query)
+        reservations = db_manager.rows_to_dict_list(result)
         return {"success": True, "data": reservations}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -237,11 +258,15 @@ async def calculate_price(
 async def get_dashboard_stats(current_user: UserInfo = Depends(get_current_user)):
     """Get dashboard statistics"""
     try:
-        # Get basic statistics
-        total_rooms = len(RoomService.get_all_rooms())
-        occupied_rooms = len([r for r in RoomService.get_all_rooms() if r.get('status') == 'Occupied'])
+        # Get basic statistics using room statistics method
+        room_stats = RoomService.get_room_statistics()
+        total_rooms = room_stats.get('total_rooms', 0)
+        occupied_rooms = room_stats.get('occupied_rooms', 0)
         available_rooms = total_rooms - occupied_rooms
-        total_reservations = len(ReservationService.get_all_reservations())
+        # Get total reservations count
+        reservations_query = "SELECT COUNT(*) as count FROM reservations"
+        reservations_result = db_manager.execute_query(reservations_query)
+        total_reservations = reservations_result[0]['count'] if reservations_result else 0
         
         return {
             "success": True,

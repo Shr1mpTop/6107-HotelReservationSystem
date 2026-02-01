@@ -1,15 +1,21 @@
-# 酒店预订管理系统 CLI 版本依赖
+# Hotel Reservation Management System Dependencies
 # Python 3.8+
 
-# CLI界面增强
+# CLI interface enhancement
 colorama==0.4.6
 tabulate==0.9.0
 
-# 日期时间处理
+# Date and time processing
 python-dateutil==2.8.2
 
-# 密码加密
-bcrypt==4.1.2
+# Security
+bcrypt==4.0.1
+
+# Web Framework (FastAPI)
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+jinja2==3.1.2
+python-multipart==0.0.6
 
 # 配置管理
 python-dotenv==1.0.0
