@@ -13,8 +13,12 @@ import "../components/Reports.css";
 
 type ReportType = "occupancy" | "revenue" | "audit" | "backup";
 
-export default function Reports() {
-  const [activeReport, setActiveReport] = useState<ReportType>("occupancy");
+interface ReportsProps {
+  defaultTab?: ReportType;
+}
+
+export default function Reports({ defaultTab = "occupancy" }: ReportsProps) {
+  const [activeReport, setActiveReport] = useState<ReportType>(defaultTab);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");

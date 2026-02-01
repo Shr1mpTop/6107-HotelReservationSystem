@@ -31,7 +31,12 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, hasReservation?: boolean) => {
+    // If room is clean but has a reservation, show yellow/orange
+    if (status.toLowerCase() === "clean" && hasReservation) {
+      return "#f59e0b"; // Orange for reserved
+    }
+
     switch (status.toLowerCase()) {
       case "clean":
         return "#10b981"; // Green
@@ -46,7 +51,12 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string, hasReservation?: boolean) => {
+    // If room is clean but has a reservation, show reservation icon
+    if (status.toLowerCase() === "clean" && hasReservation) {
+      return "📅"; // Calendar icon for reserved
+    }
+
     switch (status.toLowerCase()) {
       case "clean":
         return "✓";
@@ -83,6 +93,13 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
           <div className="legend-item">
             <span
               className="legend-dot"
+              style={{ background: "#f59e0b" }}
+            ></span>
+            <span>Reserved</span>
+          </div>
+          <div className="legend-item">
+            <span
+              className="legend-dot"
               style={{ background: "#ef4444" }}
             ></span>
             <span>Occupied</span>
@@ -114,8 +131,19 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
               <div className="floor-header">
                 <div className="floor-number">Floor {floorNum}</div>
                 <div className="floor-stats">
-                  {floorRooms.filter((r) => r.status === "Clean").length}{" "}
+                  {
+                    floorRooms.filter(
+                      (r) => r.status === "Clean" && !r.has_reservation,
+                    ).length
+                  }{" "}
                   Available
+                  <span className="divider">|</span>
+                  {
+                    floorRooms.filter(
+                      (r) => r.has_reservation && r.status === "Clean",
+                    ).length
+                  }{" "}
+                  Reserved
                   <span className="divider">|</span>
                   {
                     floorRooms.filter((r) => r.status === "Occupied").length
@@ -137,10 +165,13 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
                       onMouseEnter={() => setHoveredRoom(room.room_number)}
                       onMouseLeave={() => setHoveredRoom(null)}
                       style={{
-                        borderColor: getStatusColor(room.status),
+                        borderColor: getStatusColor(
+                          room.status,
+                          room.has_reservation,
+                        ),
                         boxShadow:
                           selectedRoom?.room_id === room.room_id
-                            ? `0 0 20px ${getStatusColor(room.status)}`
+                            ? `0 0 20px ${getStatusColor(room.status, room.has_reservation)}`
                             : undefined,
                       }}
                     >
@@ -150,17 +181,29 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
                         </span>
                         <span
                           className="room-item-status-icon"
-                          style={{ color: getStatusColor(room.status) }}
+                          style={{
+                            color: getStatusColor(
+                              room.status,
+                              room.has_reservation,
+                            ),
+                          }}
                         >
-                          {getStatusIcon(room.status)}
+                          {getStatusIcon(room.status, room.has_reservation)}
                         </span>
                       </div>
                       <div className="room-item-type">{room.type_name}</div>
                       <div
                         className="room-item-status"
-                        style={{ color: getStatusColor(room.status) }}
+                        style={{
+                          color: getStatusColor(
+                            room.status,
+                            room.has_reservation,
+                          ),
+                        }}
                       >
-                        {room.status}
+                        {room.has_reservation && room.status === "Clean"
+                          ? `Reserved (${room.reservation_check_in})`
+                          : room.status}
                       </div>
                       <div className="room-item-price">¥{room.base_price}</div>
                     </div>
@@ -188,9 +231,20 @@ export default function HotelMap({ rooms, onRoomClick }: HotelMapProps) {
               <span className="detail-label">Status:</span>
               <span
                 className="detail-value"
-                style={{ color: getStatusColor(selectedRoom.status) }}
+                style={{
+                  color: getStatusColor(
+                    selectedRoom.status,
+                    selectedRoom.has_reservation,
+                  ),
+                }}
               >
-                {getStatusIcon(selectedRoom.status)} {selectedRoom.status}
+                {getStatusIcon(
+                  selectedRoom.status,
+                  selectedRoom.has_reservation,
+                )}{" "}
+                {selectedRoom.has_reservation && selectedRoom.status === "Clean"
+                  ? `Reserved (Check-in: ${selectedRoom.reservation_check_in})`
+                  : selectedRoom.status}
               </span>
             </div>
             <div className="detail-row">

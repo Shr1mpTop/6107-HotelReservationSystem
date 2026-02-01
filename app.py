@@ -186,6 +186,47 @@ async def get_rooms(current_user: UserInfo = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/rooms/with-reservations")
+async def get_rooms_with_reservations(current_user: UserInfo = Depends(get_current_user)):
+    """Get all rooms with reservation status for today and future"""
+    try:
+        from datetime import datetime
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # Get all rooms
+        rooms = RoomService.list_all_rooms()
+        
+        # Get confirmed reservations from today onwards
+        query = """
+            SELECT room_id, check_in_date, check_out_date
+            FROM reservations
+            WHERE status IN ('Confirmed', 'CheckedIn')
+                AND check_out_date >= ?
+            ORDER BY check_in_date
+        """
+        reservations = db_manager.execute_query(query, (today,))
+        
+        # Map reservations to rooms
+        reservation_map = {}
+        for res in reservations:
+            room_id = res[0]
+            check_in = res[1]
+            if room_id not in reservation_map:
+                reservation_map[room_id] = check_in
+        
+        # Add reservation info to rooms
+        for room in rooms:
+            if room['room_id'] in reservation_map:
+                room['has_reservation'] = True
+                room['reservation_check_in'] = reservation_map[room['room_id']]
+            else:
+                room['has_reservation'] = False
+                room['reservation_check_in'] = None
+        
+        return {"success": True, "data": rooms}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/rooms/available")
 async def get_available_rooms(
     check_in: str, 

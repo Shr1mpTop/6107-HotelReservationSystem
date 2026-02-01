@@ -14,6 +14,13 @@ import HotelMap from "../components/HotelMap";
 import StatsCharts from "../components/StatsCharts";
 import Loading from "../components/Loading";
 import ReservationForm from "../components/ReservationForm";
+import CheckInForm from "../components/CheckInForm";
+import CheckOutForm from "../components/CheckOutForm";
+import ReservationSearch from "../components/ReservationSearch";
+import GuestsList from "../components/GuestsList";
+import RoomManagement from "../components/RoomManagement";
+import Reports from "../components/Reports";
+import Settings from "../components/Settings";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -72,7 +79,7 @@ export default function DashboardPage() {
   const loadRooms = async () => {
     setLoading(true);
     try {
-      const data = await ApiService.getRooms();
+      const data = await ApiService.getRoomsWithReservations();
       setRooms(data);
     } catch (err) {
       setError("Failed to load rooms");
@@ -344,63 +351,8 @@ export default function DashboardPage() {
           {/* Reservations Section */}
           {activeSection === "reservations" && (
             <div>
-              <h2 className="section-header">Reservation Management</h2>
-              <button
-                onClick={loadReservations}
-                className="btn btn-primary"
-                style={{ marginBottom: "1.5rem" }}
-              >
-                Refresh
-              </button>
-              {reservations.length > 0 ? (
-                <div className="table-container">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Guest</th>
-                        <th>Room</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Status</th>
-                        <th>Total Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reservations.map((reservation) => (
-                        <tr key={reservation.reservation_id}>
-                          <td>#{reservation.reservation_id}</td>
-                          <td>
-                            {reservation.guest_first_name}{" "}
-                            {reservation.guest_last_name}
-                          </td>
-                          <td>Room {reservation.room_number}</td>
-                          <td>
-                            {new Date(
-                              reservation.check_in_date,
-                            ).toLocaleDateString()}
-                          </td>
-                          <td>
-                            {new Date(
-                              reservation.check_out_date,
-                            ).toLocaleDateString()}
-                          </td>
-                          <td>
-                            <span
-                              className={`status ${reservation.status.toLowerCase()}`}
-                            >
-                              {reservation.status}
-                            </span>
-                          </td>
-                          <td>¥{reservation.total_price}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p>No reservations found.</p>
-              )}
+              <h2 className="section-header">Search & Manage Reservations</h2>
+              <ReservationSearch />
             </div>
           )}
 
@@ -413,9 +365,82 @@ export default function DashboardPage() {
                   // Refresh data and switch to reservations view
                   loadReservations();
                   loadDashboardStats();
+                  loadRooms(); // Refresh rooms to show reservation status
                   setTimeout(() => setActiveSection("reservations"), 2000);
                 }}
               />
+            </div>
+          )}
+
+          {/* Check-in Section */}
+          {activeSection === "check-in" && (
+            <div>
+              <h2 className="section-header">Guest Check-in</h2>
+              <CheckInForm />
+            </div>
+          )}
+
+          {/* Check-out Section */}
+          {activeSection === "check-out" && (
+            <div>
+              <h2 className="section-header">Guest Check-out</h2>
+              <CheckOutForm />
+            </div>
+          )}
+
+          {/* Today Check-ins Section */}
+          {activeSection === "today-checkins" && (
+            <div>
+              <h2 className="section-header">Today's Expected Check-ins</h2>
+              <GuestsList type="today-checkins" />
+            </div>
+          )}
+
+          {/* Current Guests Section */}
+          {activeSection === "current-guests" && (
+            <div>
+              <h2 className="section-header">Current Guests</h2>
+              <GuestsList type="current-guests" />
+            </div>
+          )}
+
+          {/* Room Types and Pricing Section */}
+          {activeSection === "room-types" && user?.role === "admin" && (
+            <div>
+              <h2 className="section-header">Room Type & Pricing Management</h2>
+              <RoomManagement />
+            </div>
+          )}
+
+          {/* Occupancy Report Section */}
+          {activeSection === "occupancy-report" && user?.role === "admin" && (
+            <div>
+              <h2 className="section-header">Reports & System Management</h2>
+              <Reports />
+            </div>
+          )}
+
+          {/* Revenue Report Section (same Reports component, different tab) */}
+          {activeSection === "revenue-report" && user?.role === "admin" && (
+            <div>
+              <h2 className="section-header">Reports & System Management</h2>
+              <Reports defaultTab="revenue" />
+            </div>
+          )}
+
+          {/* Audit Logs Section (same Reports component, different tab) */}
+          {activeSection === "audit-logs" && user?.role === "admin" && (
+            <div>
+              <h2 className="section-header">Reports & System Management</h2>
+              <Reports defaultTab="audit" />
+            </div>
+          )}
+
+          {/* Settings Section */}
+          {activeSection === "settings" && (
+            <div>
+              <h2 className="section-header">System Settings</h2>
+              <Settings />
             </div>
           )}
         </div>

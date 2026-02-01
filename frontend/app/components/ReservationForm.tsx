@@ -131,15 +131,17 @@ export default function ReservationForm({ onSuccess }: ReservationFormProps) {
     setLoading(true);
     try {
       const reservationData = {
+        guest_info: {
+          first_name: guestFirstName.trim(),
+          last_name: guestLastName.trim(),
+          email: guestEmail.trim(),
+          phone: guestPhone.trim(),
+          id_number: guestIdNumber.trim(),
+        },
         room_id: selectedRoom!.room_id,
-        guest_first_name: guestFirstName.trim(),
-        guest_last_name: guestLastName.trim(),
-        guest_email: guestEmail.trim(),
-        guest_phone: guestPhone.trim(),
-        guest_id_number: guestIdNumber.trim(),
         check_in_date: checkInDate,
         check_out_date: checkOutDate,
-        number_of_guests: numberOfGuests,
+        num_guests: numberOfGuests,
         special_requests: specialRequests.trim(),
       };
 
