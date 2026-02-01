@@ -1,6 +1,6 @@
 """
-认证服务模块
-处理用户登录、登出和会话管理
+Authentication Service Module
+Handles user login, logout and session management
 """
 
 import bcrypt
@@ -12,24 +12,24 @@ from database.db_manager import db_manager
 
 
 class AuthService:
-    """认证服务类"""
-    
-    # 会话超时时间（秒）- 30分钟
+    """Authentication Service Class"""
+
+    # Session timeout (seconds) - 30 minutes
     SESSION_TIMEOUT = 1800
-    
-    # 当前活动会话（内存存储）
+
+    # Current active sessions (memory storage)
     _active_sessions: Dict[str, Dict[str, Any]] = {}
     
     @staticmethod
     def hash_password(password: str) -> str:
         """
-        哈希密码
+        Hash password
         
         Args:
-            password: 明文密码
+            password: Plain text password
             
         Returns:
-            哈希后的密码
+            Hashed password
         """
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
@@ -38,14 +38,14 @@ class AuthService:
     @staticmethod
     def verify_password(password: str, password_hash: str) -> bool:
         """
-        验证密码
+        Verify password
         
         Args:
-            password: 明文密码
-            password_hash: 哈希密码
+            password: Plain text password
+            password_hash: Hashed password
             
         Returns:
-            密码是否匹配
+            Whether password matches
         """
         try:
             return bcrypt.checkpw(
@@ -57,22 +57,22 @@ class AuthService:
     
     @staticmethod
     def generate_session_token() -> str:
-        """生成会话令牌"""
+        """Generate session token"""
         return secrets.token_urlsafe(32)
     
     @classmethod
     def login(cls, username: str, password: str) -> Optional[Dict[str, Any]]:
         """
-        用户登录
+        User login
         
         Args:
-            username: 用户名
-            password: 密码
+            username: Username
+            password: Password
             
         Returns:
-            成功返回用户信息和会话令牌，失败返回None
+            Returns user info and session token on success, None on failure
         """
-        # 查询用户
+        # Query user
         query = """
             SELECT user_id, username, password_hash, full_name, email, 
                    phone, role, is_active
@@ -86,14 +86,14 @@ class AuthService:
         
         user = dict(result[0])
         
-        # 验证密码
+        # Verify password
         if not cls.verify_password(password, user['password_hash']):
             return None
         
-        # 生成会话令牌
+        # Generate session token
         session_token = cls.generate_session_token()
         
-        # 保存会话到数据库
+        # Save session to database
         session_query = """
             INSERT INTO user_sessions (user_id, session_token, login_time, last_activity)
             VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -103,11 +103,11 @@ class AuthService:
             (user['user_id'], session_token)
         )
         
-        # 更新用户最后登录时间
+        # Update user's last login time
         update_query = "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?"
         db_manager.execute_update(update_query, (user['user_id'],))
         
-        # 保存到内存会话
+        # Save to memory session
         session_info = {
             'session_id': session_id,
             'user_id': user['user_id'],
@@ -121,7 +121,7 @@ class AuthService:
         }
         cls._active_sessions[session_token] = session_info
         
-        # 记录审计日志
+        # Record audit log
         cls._log_audit(
             user['user_id'],
             'LOGIN',
@@ -139,20 +139,20 @@ class AuthService:
     @classmethod
     def logout(cls, session_token: str) -> bool:
         """
-        用户登出
+        User logout
         
         Args:
-            session_token: 会话令牌
+            session_token: Session token
             
         Returns:
-            是否成功登出
+            Whether logout was successful
         """
         if session_token not in cls._active_sessions:
             return False
         
         session = cls._active_sessions[session_token]
         
-        # 记录审计日志
+        # Record audit log
         cls._log_audit(
             session['user_id'],
             'LOGOUT',
@@ -162,11 +162,11 @@ class AuthService:
             f"User {session['username']} logged out"
         )
         
-        # 从数据库中标记会话为非活动
+        # Mark session as inactive in database
         query = "UPDATE user_sessions SET is_active = 0 WHERE session_token = ?"
         db_manager.execute_update(query, (session_token,))
         
-        # 从内存中删除会话
+        # Remove session from memory
         del cls._active_sessions[session_token]
         
         return True
@@ -174,30 +174,30 @@ class AuthService:
     @classmethod
     def validate_session(cls, session_token: str) -> Optional[Dict[str, Any]]:
         """
-        验证会话有效性
+        Validate session validity
         
         Args:
-            session_token: 会话令牌
+            session_token: Session token
             
         Returns:
-            有效返回用户信息，无效返回None
+            Returns user info if valid, None if invalid
         """
         if session_token not in cls._active_sessions:
             return None
         
         session = cls._active_sessions[session_token]
         
-        # 检查会话是否超时
+        # Check if session has timed out
         time_diff = (datetime.now() - session['last_activity']).total_seconds()
         if time_diff > cls.SESSION_TIMEOUT:
-            # 会话超时，自动登出
+            # Session timed out, auto logout
             cls.logout(session_token)
             return None
         
-        # 更新最后活动时间
+        # Update last activity time
         session['last_activity'] = datetime.now()
         
-        # 更新数据库中的活动时间
+        # Update activity time in database
         query = "UPDATE user_sessions SET last_activity = CURRENT_TIMESTAMP WHERE session_token = ?"
         db_manager.execute_update(query, (session_token,))
         
@@ -206,27 +206,27 @@ class AuthService:
     @classmethod
     def get_session_info(cls, session_token: str) -> Optional[Dict[str, Any]]:
         """
-        获取会话信息
+        Get session information
         
         Args:
-            session_token: 会话令牌
+            session_token: Session token
             
         Returns:
-            会话信息
+            Session information
         """
         return cls._active_sessions.get(session_token)
     
     @classmethod
     def check_permission(cls, session_token: str, required_roles: list) -> bool:
         """
-        检查用户权限
+        Check user permissions
         
         Args:
-            session_token: 会话令牌
-            required_roles: 需要的角色列表
+            session_token: Session token
+            required_roles: List of required roles
             
         Returns:
-            是否有权限
+            Whether user has permission
         """
         session = cls.validate_session(session_token)
         if not session:
@@ -236,27 +236,27 @@ class AuthService:
     
     @classmethod
     def is_admin(cls, session_token: str) -> bool:
-        """检查是否是管理员"""
+        """Check if user is admin"""
         return cls.check_permission(session_token, ['admin'])
     
     @classmethod
     def is_front_desk(cls, session_token: str) -> bool:
-        """检查是否是前台员工"""
+        """Check if user is front desk staff"""
         return cls.check_permission(session_token, ['admin', 'front_desk'])
     
     @classmethod
     def is_housekeeping(cls, session_token: str) -> bool:
-        """检查是否是客房员工"""
+        """Check if user is housekeeping staff"""
         return cls.check_permission(session_token, ['admin', 'housekeeping'])
     
     @classmethod
     def get_active_sessions_count(cls) -> int:
-        """获取活动会话数量"""
+        """Get active sessions count"""
         return len(cls._active_sessions)
     
     @classmethod
     def cleanup_expired_sessions(cls):
-        """清理过期会话"""
+        """Clean up expired sessions"""
         expired_tokens = []
         current_time = datetime.now()
         
@@ -272,15 +272,15 @@ class AuthService:
     def _log_audit(user_id: int, operation_type: str, table_name: str,
                    record_id: int, old_value: str, description: str):
         """
-        记录审计日志
+        Record audit log
         
         Args:
-            user_id: 用户ID
-            operation_type: 操作类型
-            table_name: 表名
-            record_id: 记录ID
-            old_value: 旧值
-            description: 描述
+            user_id: User ID
+            operation_type: Operation type
+            table_name: Table name
+            record_id: Record ID
+            old_value: Old value
+            description: Description
         """
         query = """
             INSERT INTO audit_logs 
@@ -293,40 +293,40 @@ class AuthService:
                 (user_id, operation_type, table_name, record_id, old_value, description)
             )
         except Exception as e:
-            print(f"记录审计日志失败: {e}")
+            print(f"Failed to record audit log: {e}")
     
     @classmethod
     def change_password(cls, user_id: int, old_password: str, new_password: str) -> tuple:
         """
-        修改密码
+        Change password
         
         Args:
-            user_id: 用户ID
-            old_password: 旧密码
-            new_password: 新密码
+            user_id: User ID
+            old_password: Old password
+            new_password: New password
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 获取用户当前密码哈希
+        # Get user's current password hash
         query = "SELECT password_hash FROM users WHERE user_id = ?"
         result = db_manager.execute_query(query, (user_id,))
         
         if not result:
-            return False, "用户不存在"
+            return False, "User does not exist"
         
         current_hash = result[0]['password_hash']
         
-        # 验证旧密码
+        # Verify old password
         if not cls.verify_password(old_password, current_hash):
-            return False, "旧密码不正确"
+            return False, "Old password is incorrect"
         
-        # 更新密码
+        # Update password
         new_hash = cls.hash_password(new_password)
         update_query = "UPDATE users SET password_hash = ? WHERE user_id = ?"
         db_manager.execute_update(update_query, (new_hash, user_id))
         
-        # 记录审计日志
+        # Record audit log
         cls._log_audit(
             user_id,
             'PASSWORD_CHANGE',
@@ -336,4 +336,4 @@ class AuthService:
             "User changed password"
         )
         
-        return True, "密码修改成功"
+        return True, "Password changed successfully"

@@ -1,6 +1,6 @@
 """
-定价服务模块
-处理房间定价计算，包括基础价格和季节性定价
+Pricing Service Module
+Handles room pricing calculations, including base prices and seasonal pricing
 """
 
 from datetime import datetime, timedelta
@@ -9,18 +9,18 @@ from database.db_manager import db_manager
 
 
 class PricingService:
-    """定价服务类"""
+    """Pricing Service Class"""
     
     @staticmethod
     def get_room_base_price(room_type_id: int) -> Optional[float]:
         """
-        获取房型基础价格
+        Get room type base price
         
         Args:
-            room_type_id: 房型ID
+            room_type_id: Room type ID
             
         Returns:
-            基础价格
+            Base price
         """
         query = "SELECT base_price FROM room_types WHERE room_type_id = ?"
         result = db_manager.execute_query(query, (room_type_id,))
@@ -32,14 +32,14 @@ class PricingService:
     @staticmethod
     def get_seasonal_pricing(room_type_id: int, date: str) -> Optional[Dict[str, Any]]:
         """
-        获取特定日期的季节性定价规则
+        Get seasonal pricing rule for specific date
         
         Args:
-            room_type_id: 房型ID
-            date: 日期（YYYY-MM-DD格式）
+            room_type_id: Room type ID
+            date: Date in YYYY-MM-DD format
             
         Returns:
-            季节性定价规则信息
+            Seasonal pricing rule information
         """
         query = """
             SELECT pricing_id, season_name, price_multiplier, fixed_price
@@ -59,47 +59,47 @@ class PricingService:
     @staticmethod
     def calculate_daily_price(room_type_id: int, date: str) -> float:
         """
-        计算特定日期的房间价格
+        Calculate room price for specific date
         
         Args:
-            room_type_id: 房型ID
-            date: 日期（YYYY-MM-DD格式）
+            room_type_id: Room type ID
+            date: Date in YYYY-MM-DD format
             
         Returns:
-            当日价格
+            Daily price
         """
-        # 获取基础价格
+        # Get base price
         base_price = PricingService.get_room_base_price(room_type_id)
         if base_price is None:
             return 0.0
         
-        # 检查是否有季节性定价
+        # Check for seasonal pricing
         seasonal = PricingService.get_seasonal_pricing(room_type_id, date)
         
         if seasonal:
-            # 如果有固定价格，使用固定价格
+            # If fixed price exists, use fixed price
             if seasonal['fixed_price']:
                 return float(seasonal['fixed_price'])
-            # 否则使用价格乘数
+            # Otherwise use price multiplier
             elif seasonal['price_multiplier']:
                 return base_price * float(seasonal['price_multiplier'])
         
-        # 返回基础价格
+        # Return base price
         return base_price
     
     @staticmethod
     def calculate_total_price(room_type_id: int, check_in_date: str, 
                             check_out_date: str) -> Dict[str, Any]:
         """
-        计算总价格（包括每日明细）
+        Calculate total price (including daily breakdown)
         
         Args:
-            room_type_id: 房型ID
-            check_in_date: 入住日期（YYYY-MM-DD）
-            check_out_date: 退房日期（YYYY-MM-DD）
+            room_type_id: Room type ID
+            check_in_date: Check-in date (YYYY-MM-DD)
+            check_out_date: Check-out date (YYYY-MM-DD)
             
         Returns:
-            包含总价和每日明细的字典
+            Dictionary containing total price and daily breakdown
         """
         try:
             check_in = datetime.strptime(check_in_date, '%Y-%m-%d')
@@ -110,7 +110,7 @@ class PricingService:
         if check_out <= check_in:
             return {'total': 0.0, 'nights': 0, 'daily_prices': []}
         
-        # 计算每日价格
+        # Calculate daily prices
         total_price = 0.0
         daily_prices = []
         current_date = check_in
@@ -119,7 +119,7 @@ class PricingService:
             date_str = current_date.strftime('%Y-%m-%d')
             daily_price = PricingService.calculate_daily_price(room_type_id, date_str)
             
-            # 获取季节性定价信息（用于显示）
+            # Get seasonal pricing info (for display)
             seasonal = PricingService.get_seasonal_pricing(room_type_id, date_str)
             season_name = seasonal['season_name'] if seasonal else None
             
@@ -147,35 +147,35 @@ class PricingService:
                            fixed_price: float = None,
                            user_id: int = None) -> tuple:
         """
-        添加季节性定价规则
+        Add seasonal pricing rule
         
         Args:
-            room_type_id: 房型ID
-            season_name: 季节名称
-            start_date: 开始日期
-            end_date: 结束日期
-            price_multiplier: 价格乘数
-            fixed_price: 固定价格
-            user_id: 操作用户ID
+            room_type_id: Room type ID
+            season_name: Season name
+            start_date: Start date
+            end_date: End date
+            price_multiplier: Price multiplier
+            fixed_price: Fixed price
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息, 定价ID)
+            (Success status, Message, Pricing ID)
         """
-        # 验证日期
+        # Validate dates
         try:
             start = datetime.strptime(start_date, '%Y-%m-%d')
             end = datetime.strptime(end_date, '%Y-%m-%d')
             
             if end <= start:
-                return False, "结束日期必须晚于开始日期", None
+                return False, "End date must be later than start date", None
         except ValueError:
-            return False, "日期格式无效，请使用YYYY-MM-DD格式", None
+            return False, "Invalid date format, please use YYYY-MM-DD format", None
         
-        # 验证价格设置
+        # Validate price settings
         if price_multiplier is None and fixed_price is None:
-            return False, "必须设置价格乘数或固定价格", None
+            return False, "Must set either price multiplier or fixed price", None
         
-        # 检查日期冲突
+        # Check for date conflicts
         conflict_query = """
             SELECT pricing_id, season_name, start_date, end_date
             FROM seasonal_pricing
@@ -195,9 +195,9 @@ class PricingService:
         
         if conflicts:
             conflict_info = dict(conflicts[0])
-            return False, f"日期范围与现有规则 '{conflict_info['season_name']}' ({conflict_info['start_date']} 至 {conflict_info['end_date']}) 冲突", None
+            return False, f"Date range conflicts with existing rule '{conflict_info['season_name']}' ({conflict_info['start_date']} to {conflict_info['end_date']})", None
         
-        # 插入新规则
+        # Insert new rule
         query = """
             INSERT INTO seasonal_pricing 
             (room_type_id, season_name, start_date, end_date, 
@@ -212,7 +212,7 @@ class PricingService:
                  price_multiplier, fixed_price)
             )
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 PricingService._log_audit(
                     user_id,
@@ -223,10 +223,10 @@ class PricingService:
                     f"Added seasonal pricing '{season_name}' for room type {room_type_id}"
                 )
             
-            return True, "季节性定价规则添加成功", pricing_id
+            return True, "Seasonal pricing rule added successfully", pricing_id
             
         except Exception as e:
-            return False, f"添加失败: {str(e)}", None
+            return False, f"Addition failed: {str(e)}", None
     
     @staticmethod
     def update_seasonal_pricing(pricing_id: int, season_name: str = None,
@@ -235,30 +235,30 @@ class PricingService:
                               fixed_price: float = None,
                               user_id: int = None) -> tuple:
         """
-        更新季节性定价规则
+        Update seasonal pricing rule
         
         Args:
-            pricing_id: 定价规则ID
-            season_name: 季节名称
-            start_date: 开始日期
-            end_date: 结束日期
-            price_multiplier: 价格乘数
-            fixed_price: 固定价格
-            user_id: 操作用户ID
+            pricing_id: Pricing rule ID
+            season_name: Season name
+            start_date: Start date
+            end_date: End date
+            price_multiplier: Price multiplier
+            fixed_price: Fixed price
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 获取当前规则
+        # Get current rule
         current_query = "SELECT * FROM seasonal_pricing WHERE pricing_id = ?"
         current = db_manager.execute_query(current_query, (pricing_id,))
         
         if not current:
-            return False, "定价规则不存在"
+            return False, "Pricing rule does not exist"
         
         current_rule = dict(current[0])
         
-        # 构建更新字段
+        # Build update fields
         updates = []
         params = []
         
@@ -283,18 +283,18 @@ class PricingService:
             params.append(fixed_price)
         
         if not updates:
-            return False, "没有需要更新的内容"
+            return False, "No content to update"
         
         updates.append("updated_at = CURRENT_TIMESTAMP")
         params.append(pricing_id)
         
-        # 执行更新
+        # Execute update
         query = f"UPDATE seasonal_pricing SET {', '.join(updates)} WHERE pricing_id = ?"
         
         try:
             db_manager.execute_update(query, tuple(params))
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 PricingService._log_audit(
                     user_id,
@@ -305,22 +305,22 @@ class PricingService:
                     f"Updated seasonal pricing rule {pricing_id}"
                 )
             
-            return True, "定价规则更新成功"
+            return True, "Pricing rule updated successfully"
             
         except Exception as e:
-            return False, f"更新失败: {str(e)}"
+            return False, f"Update failed: {str(e)}"
     
     @staticmethod
     def delete_seasonal_pricing(pricing_id: int, user_id: int = None) -> tuple:
         """
-        删除季节性定价规则（软删除）
+        Delete seasonal pricing rule (soft delete)
         
         Args:
-            pricing_id: 定价规则ID
-            user_id: 操作用户ID
+            pricing_id: Pricing rule ID
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
         query = "UPDATE seasonal_pricing SET is_active = 0 WHERE pricing_id = ?"
         
@@ -328,9 +328,9 @@ class PricingService:
             rowcount = db_manager.execute_update(query, (pricing_id,))
             
             if rowcount == 0:
-                return False, "定价规则不存在"
+                return False, "Pricing rule does not exist"
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 PricingService._log_audit(
                     user_id,
@@ -341,23 +341,23 @@ class PricingService:
                     f"Deleted seasonal pricing rule {pricing_id}"
                 )
             
-            return True, "定价规则删除成功"
+            return True, "Pricing rule deleted successfully"
             
         except Exception as e:
-            return False, f"删除失败: {str(e)}"
+            return False, f"Deletion failed: {str(e)}"
     
     @staticmethod
     def list_seasonal_pricing(room_type_id: int = None, 
                             active_only: bool = True) -> List[Dict[str, Any]]:
         """
-        列出季节性定价规则
+        List seasonal pricing rules
         
         Args:
-            room_type_id: 房型ID（None表示所有房型）
-            active_only: 是否只显示活动规则
+            room_type_id: Room type ID (None for all room types)
+            active_only: Whether to show only active rules
             
         Returns:
-            定价规则列表
+            List of pricing rules
         """
         query = """
             SELECT sp.*, rt.type_name
@@ -382,7 +382,7 @@ class PricingService:
     @staticmethod
     def _log_audit(user_id: int, operation_type: str, table_name: str,
                    record_id: int, old_value: str, description: str):
-        """记录审计日志"""
+        """Record audit log"""
         query = """
             INSERT INTO audit_logs 
             (user_id, operation_type, table_name, record_id, old_value, description)
@@ -394,4 +394,4 @@ class PricingService:
                 (user_id, operation_type, table_name, record_id, old_value, description)
             )
         except Exception as e:
-            print(f"记录审计日志失败: {e}")
+            print(f"Failed to record audit log: {e}")

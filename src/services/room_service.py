@@ -1,6 +1,6 @@
 """
-房间服务模块
-处理房间查询、状态管理等功能
+Room Service Module
+Handles room queries, status management and other room-related functions
 """
 
 from datetime import datetime
@@ -9,9 +9,9 @@ from database.db_manager import db_manager
 
 
 class RoomService:
-    """房间服务类"""
+    """Room Service Class"""
     
-    # 房间状态常量
+    # Room status constants
     STATUS_CLEAN = 'Clean'
     STATUS_DIRTY = 'Dirty'
     STATUS_OCCUPIED = 'Occupied'
@@ -21,17 +21,17 @@ class RoomService:
     def get_available_rooms(check_in_date: str, check_out_date: str, 
                            room_type_id: int = None) -> List[Dict[str, Any]]:
         """
-        查询可用房间
+        Query available rooms
         
         Args:
-            check_in_date: 入住日期（YYYY-MM-DD）
-            check_out_date: 退房日期（YYYY-MM-DD）
-            room_type_id: 房型ID（可选）
+            check_in_date: Check-in date (YYYY-MM-DD)
+            check_out_date: Check-out date (YYYY-MM-DD)
+            room_type_id: Room type ID (optional)
             
         Returns:
-            可用房间列表
+            Available room list
         """
-        # 基础查询
+        # Base query
         query = """
             SELECT r.room_id, r.room_number, r.floor, r.status,
                    rt.room_type_id, rt.type_name, rt.description, 
@@ -66,13 +66,13 @@ class RoomService:
     @staticmethod
     def get_room_by_id(room_id: int) -> Optional[Dict[str, Any]]:
         """
-        根据ID获取房间信息
+        Get room information by ID
         
         Args:
-            room_id: 房间ID
+            room_id: Room ID
             
         Returns:
-            房间信息
+            Room information
         """
         query = """
             SELECT r.*, rt.type_name, rt.description, rt.base_price, 
@@ -90,13 +90,13 @@ class RoomService:
     @staticmethod
     def get_room_by_number(room_number: str) -> Optional[Dict[str, Any]]:
         """
-        根据房间号获取房间信息
+        Get room information by room number
         
         Args:
-            room_number: 房间号
+            room_number: Room number
             
         Returns:
-            房间信息
+            Room information
         """
         query = """
             SELECT r.*, rt.type_name, rt.description, rt.base_price, 
@@ -115,17 +115,17 @@ class RoomService:
     def update_room_status(room_id: int, new_status: str, 
                           user_id: int = None) -> tuple:
         """
-        更新房间状态
+        Update room status
         
         Args:
-            room_id: 房间ID
-            new_status: 新状态
-            user_id: 操作用户ID
+            room_id: Room ID
+            new_status: New status
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 验证状态
+        # Validate status
         valid_statuses = [
             RoomService.STATUS_CLEAN,
             RoomService.STATUS_DIRTY,
@@ -134,16 +134,16 @@ class RoomService:
         ]
         
         if new_status not in valid_statuses:
-            return False, f"无效的房间状态: {new_status}"
+            return False, f"Invalid room status: {new_status}"
         
-        # 获取当前状态
+        # Get current status
         current_room = RoomService.get_room_by_id(room_id)
         if not current_room:
-            return False, "房间不存在"
+            return False, "Room does not exist"
         
         old_status = current_room['status']
         
-        # 更新状态
+        # Update status
         query = """
             UPDATE rooms 
             SET status = ?, updated_at = CURRENT_TIMESTAMP
@@ -153,7 +153,7 @@ class RoomService:
         try:
             db_manager.execute_update(query, (new_status, room_id))
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 RoomService._log_audit(
                     user_id,
@@ -164,24 +164,24 @@ class RoomService:
                     f"Changed room {current_room['room_number']} status from {old_status} to {new_status}"
                 )
             
-            return True, f"房间状态已更新为: {new_status}"
+            return True, f"Room status updated to: {new_status}"
             
         except Exception as e:
-            return False, f"更新失败: {str(e)}"
+            return False, f"Update failed: {str(e)}"
     
     @staticmethod
     def list_all_rooms(status: str = None, room_type_id: int = None,
                       floor: int = None) -> List[Dict[str, Any]]:
         """
-        列出所有房间
+        List all rooms
         
         Args:
-            status: 房间状态过滤
-            room_type_id: 房型ID过滤
-            floor: 楼层过滤
+            status: Room status filter
+            room_type_id: Room type ID filter
+            floor: Floor filter
             
         Returns:
-            房间列表
+            Room list
         """
         query = """
             SELECT r.*, rt.type_name, rt.base_price, rt.max_occupancy
@@ -211,10 +211,10 @@ class RoomService:
     @staticmethod
     def get_room_types() -> List[Dict[str, Any]]:
         """
-        获取所有活动的房型
+        Get all active room types
         
         Returns:
-            房型列表
+            Room type list
         """
         query = """
             SELECT * FROM room_types 
@@ -227,13 +227,13 @@ class RoomService:
     @staticmethod
     def get_room_type_by_id(room_type_id: int) -> Optional[Dict[str, Any]]:
         """
-        根据ID获取房型信息
+        Get room type information by ID
         
         Args:
-            room_type_id: 房型ID
+            room_type_id: Room type ID
             
         Returns:
-            房型信息
+            Room type information
         """
         query = "SELECT * FROM room_types WHERE room_type_id = ?"
         result = db_manager.execute_query(query, (room_type_id,))
@@ -247,27 +247,27 @@ class RoomService:
                      max_occupancy: int, amenities: str, 
                      user_id: int = None) -> tuple:
         """
-        添加新房型
+        Add new room type
         
         Args:
-            type_name: 房型名称
-            description: 描述
-            base_price: 基础价格
-            max_occupancy: 最大入住人数
-            amenities: 设施
-            user_id: 操作用户ID
+            type_name: Room type name
+            description: Description
+            base_price: Base price
+            max_occupancy: Maximum occupancy
+            amenities: Amenities
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息, 房型ID)
+            (Success status, Message, Room type ID)
         """
-        # 检查房型名称是否已存在
+        # Check if room type name already exists
         check_query = "SELECT room_type_id FROM room_types WHERE type_name = ?"
         existing = db_manager.execute_query(check_query, (type_name,))
         
         if existing:
-            return False, "房型名称已存在", None
+            return False, "Room type name already exists", None
         
-        # 插入新房型
+        # Insert new room type
         query = """
             INSERT INTO room_types 
             (type_name, description, base_price, max_occupancy, amenities)
@@ -280,7 +280,7 @@ class RoomService:
                 (type_name, description, base_price, max_occupancy, amenities)
             )
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 RoomService._log_audit(
                     user_id,
@@ -291,10 +291,10 @@ class RoomService:
                     f"Added new room type: {type_name}"
                 )
             
-            return True, "房型添加成功", room_type_id
+            return True, "Room type added successfully", room_type_id
             
         except Exception as e:
-            return False, f"添加失败: {str(e)}", None
+            return False, f"Addition failed: {str(e)}", None
     
     @staticmethod
     def update_room_type(room_type_id: int, type_name: str = None,
@@ -302,38 +302,38 @@ class RoomService:
                         max_occupancy: int = None, amenities: str = None,
                         user_id: int = None) -> tuple:
         """
-        更新房型信息
+        Update room type information
         
         Args:
-            room_type_id: 房型ID
-            type_name: 房型名称
-            description: 描述
-            base_price: 基础价格
-            max_occupancy: 最大入住人数
-            amenities: 设施
-            user_id: 操作用户ID
+            room_type_id: Room type ID
+            type_name: Room type name
+            description: Description
+            base_price: Base price
+            max_occupancy: Maximum occupancy
+            amenities: Amenities
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 获取当前房型
+        # Get current room type
         current = RoomService.get_room_type_by_id(room_type_id)
         if not current:
-            return False, "房型不存在"
+            return False, "Room type does not exist"
         
-        # 构建更新字段
+        # Build update fields
         updates = []
         params = []
         
         if type_name:
-            # 检查新名称是否与其他房型重复
+            # Check if new name conflicts with other room types
             check_query = """
                 SELECT room_type_id FROM room_types 
                 WHERE type_name = ? AND room_type_id != ?
             """
             existing = db_manager.execute_query(check_query, (type_name, room_type_id))
             if existing:
-                return False, "房型名称已被使用"
+                return False, "Room type name is already in use"
             
             updates.append("type_name = ?")
             params.append(type_name)
@@ -355,18 +355,18 @@ class RoomService:
             params.append(amenities)
         
         if not updates:
-            return False, "没有需要更新的内容"
+            return False, "No content needs to be updated"
         
         updates.append("updated_at = CURRENT_TIMESTAMP")
         params.append(room_type_id)
         
-        # 执行更新
+        # Execute update
         query = f"UPDATE room_types SET {', '.join(updates)} WHERE room_type_id = ?"
         
         try:
             db_manager.execute_update(query, tuple(params))
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 RoomService._log_audit(
                     user_id,
@@ -377,39 +377,39 @@ class RoomService:
                     f"Updated room type {room_type_id}"
                 )
             
-            return True, "房型更新成功"
+            return True, "Room type updated successfully"
             
         except Exception as e:
-            return False, f"更新失败: {str(e)}"
+            return False, f"Update failed: {str(e)}"
     
     @staticmethod
     def add_room(room_number: str, room_type_id: int, floor: int,
                 user_id: int = None) -> tuple:
         """
-        添加新房间
+        Add new room
         
         Args:
-            room_number: 房间号
-            room_type_id: 房型ID
-            floor: 楼层
-            user_id: 操作用户ID
+            room_number: Room number
+            room_type_id: Room type ID
+            floor: Floor
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息, 房间ID)
+            (Success status, Message, Room ID)
         """
-        # 检查房间号是否已存在
+        # Check if room number already exists
         check_query = "SELECT room_id FROM rooms WHERE room_number = ?"
         existing = db_manager.execute_query(check_query, (room_number,))
         
         if existing:
-            return False, "房间号已存在", None
+            return False, "Room number already exists", None
         
-        # 验证房型是否存在
+        # Validate room type exists
         room_type = RoomService.get_room_type_by_id(room_type_id)
         if not room_type:
-            return False, "房型不存在", None
+            return False, "Room type does not exist", None
         
-        # 插入新房间
+        # Insert new room
         query = """
             INSERT INTO rooms (room_number, room_type_id, floor, status)
             VALUES (?, ?, ?, 'Clean')
@@ -421,7 +421,7 @@ class RoomService:
                 (room_number, room_type_id, floor)
             )
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 RoomService._log_audit(
                     user_id,
@@ -432,18 +432,18 @@ class RoomService:
                     f"Added new room: {room_number}"
                 )
             
-            return True, "房间添加成功", room_id
+            return True, "Room added successfully", room_id
             
         except Exception as e:
-            return False, f"添加失败: {str(e)}", None
+            return False, f"Addition failed: {str(e)}", None
     
     @staticmethod
     def get_room_statistics() -> Dict[str, Any]:
         """
-        获取房间统计信息
+        Get room statistics information
         
         Returns:
-            统计数据字典
+            Statistics data dictionary
         """
         query = """
             SELECT 
@@ -464,7 +464,7 @@ class RoomService:
     @staticmethod
     def _log_audit(user_id: int, operation_type: str, table_name: str,
                    record_id: int, old_value: str, description: str):
-        """记录审计日志"""
+        """Record audit log"""
         query = """
             INSERT INTO audit_logs 
             (user_id, operation_type, table_name, record_id, old_value, description)
@@ -476,4 +476,4 @@ class RoomService:
                 (user_id, operation_type, table_name, record_id, old_value, description)
             )
         except Exception as e:
-            print(f"记录审计日志失败: {e}")
+            print(f"Failed to record audit log: {e}")

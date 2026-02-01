@@ -1,6 +1,6 @@
 """
-邮件服务模块（模拟实现）
-用于发送预订确认、取消等通知邮件
+Email Service Module (Simulated Implementation)
+Used to send reservation confirmation, cancellation and other notification emails
 """
 
 from datetime import datetime
@@ -9,47 +9,47 @@ from database.db_manager import db_manager
 
 
 class EmailService:
-    """邮件服务类（模拟实现）"""
+    """Email Service Class (Simulated Implementation)"""
     
     @staticmethod
     def send_reservation_confirmation(reservation: Dict[str, Any]) -> bool:
         """
-        发送预订确认邮件
+        Send reservation confirmation email
         
         Args:
-            reservation: 预订信息
+            reservation: Reservation information
             
         Returns:
-            是否发送成功
+            Whether sending was successful
         """
-        subject = f"预订确认 - 预订号 {reservation['reservation_id']}"
+        subject = f"Reservation Confirmation - Reservation #{reservation['reservation_id']}"
         
         body = f"""
-尊敬的 {reservation['guest_name']}，
+Dear {reservation['guest_name']},
 
-感谢您选择我们的酒店！您的预订已确认。
+Thank you for choosing our hotel! Your reservation has been confirmed.
 
-预订详情：
+Reservation Details:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-预订号：{reservation['reservation_id']}
-房间号：{reservation['room_number']}
-房型：{reservation['room_type']}
-入住日期：{reservation['check_in_date']}
-退房日期：{reservation['check_out_date']}
-客人数量：{reservation['num_guests']}
-总价：¥{reservation['total_price']:.2f}
+Reservation #: {reservation['reservation_id']}
+Room Number: {reservation['room_number']}
+Room Type: {reservation['room_type']}
+Check-in Date: {reservation['check_in_date']}
+Check-out Date: {reservation['check_out_date']}
+Number of Guests: {reservation['num_guests']}
+Total Price: ¥{reservation['total_price']:.2f}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-特殊要求：{reservation.get('special_requests', '无')}
+Special Requests: {reservation.get('special_requests', 'None')}
 
-我们期待您的到来！
+We look forward to your arrival!
 
-如有任何疑问，请联系我们：
-电话：1234567890
-邮箱：info@hotel.com
+If you have any questions, please contact us:
+Phone: 1234567890
+Email: info@hotel.com
 
-此致
-酒店管理团队
+Best regards,
+Hotel Management Team
         """
         
         return EmailService._send_email(
@@ -63,35 +63,35 @@ class EmailService:
     @staticmethod
     def send_cancellation_notice(reservation: Dict[str, Any]) -> bool:
         """
-        发送预订取消通知
+        Send reservation cancellation notice
         
         Args:
-            reservation: 预订信息
+            reservation: Reservation information
             
         Returns:
-            是否发送成功
+            Whether sending was successful
         """
-        subject = f"预订取消确认 - 预订号 {reservation['reservation_id']}"
+        subject = f"Reservation Cancellation Confirmation - Reservation #{reservation['reservation_id']}"
         
         body = f"""
-尊敬的 {reservation['guest_name']}，
+Dear {reservation['guest_name']},
 
-您的预订已被取消。
+Your reservation has been cancelled.
 
-预订详情：
+Reservation Details:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-预订号：{reservation['reservation_id']}
-房间号：{reservation['room_number']}
-房型：{reservation['room_type']}
-原入住日期：{reservation['check_in_date']}
-原退房日期：{reservation['check_out_date']}
-取消时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Reservation #: {reservation['reservation_id']}
+Room Number: {reservation['room_number']}
+Room Type: {reservation['room_type']}
+Original Check-in Date: {reservation['check_in_date']}
+Original Check-out Date: {reservation['check_out_date']}
+Cancellation Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-如果您有任何疑问，请随时联系我们。
+If you have any questions, please contact us.
 
-此致
-酒店管理团队
+Best regards,
+Hotel Management Team
         """
         
         return EmailService._send_email(
@@ -105,42 +105,42 @@ class EmailService:
     @staticmethod
     def send_modification_notice(reservation: Dict[str, Any], changes: str) -> bool:
         """
-        发送预订修改通知
+        Send reservation modification notice
         
         Args:
-            reservation: 预订信息
-            changes: 修改内容描述
+            reservation: Reservation information
+            changes: Description of changes
             
         Returns:
-            是否发送成功
+            Whether sending was successful
         """
-        subject = f"预订修改确认 - 预订号 {reservation['reservation_id']}"
+        subject = f"Reservation Modification Confirmation - Reservation #{reservation['reservation_id']}"
         
         body = f"""
-尊敬的 {reservation['guest_name']}，
+Dear {reservation['guest_name']},
 
-您的预订信息已更新。
+Your reservation information has been updated.
 
-预订详情：
+Reservation Details:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-预订号：{reservation['reservation_id']}
-房间号：{reservation['room_number']}
-房型：{reservation['room_type']}
-入住日期：{reservation['check_in_date']}
-退房日期：{reservation['check_out_date']}
-客人数量：{reservation['num_guests']}
-总价：¥{reservation['total_price']:.2f}
+Reservation #: {reservation['reservation_id']}
+Room Number: {reservation['room_number']}
+Room Type: {reservation['room_type']}
+Check-in Date: {reservation['check_in_date']}
+Check-out Date: {reservation['check_out_date']}
+Number of Guests: {reservation['num_guests']}
+Total Price: ¥{reservation['total_price']:.2f}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-修改内容：
+Changes Made:
 {changes}
 
-修改时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Modification Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-如有任何疑问，请联系我们。
+If you have any questions, please contact us.
 
-此致
-酒店管理团队
+Best regards,
+Hotel Management Team
         """
         
         return EmailService._send_email(
@@ -155,30 +155,30 @@ class EmailService:
     def _send_email(reservation_id: int, recipient_email: str, 
                    subject: str, body: str, notification_type: str) -> bool:
         """
-        发送邮件（模拟实现）
+        Send email (simulated implementation)
         
         Args:
-            reservation_id: 预订ID
-            recipient_email: 收件人邮箱
-            subject: 邮件主题
-            body: 邮件正文
-            notification_type: 通知类型
+            reservation_id: Reservation ID
+            recipient_email: Recipient email
+            subject: Email subject
+            body: Email body
+            notification_type: Notification type
             
         Returns:
-            是否发送成功
+            Whether sending was successful
         """
         try:
-            # 模拟邮件发送 - 实际应用中这里会调用真实的邮件服务API
+            # Simulate email sending - in real application, this would call actual email service API
             print(f"\n{'='*60}")
-            print(f"[模拟邮件服务] 正在发送邮件...")
+            print(f"[Simulated Email Service] Sending email...")
             print(f"{'='*60}")
-            print(f"收件人: {recipient_email}")
-            print(f"主题: {subject}")
+            print(f"Recipient: {recipient_email}")
+            print(f"Subject: {subject}")
             print(f"{'='*60}")
             print(body)
             print(f"{'='*60}\n")
             
-            # 记录到数据库
+            # Record to database
             query = """
                 INSERT INTO email_notifications 
                 (reservation_id, recipient_email, subject, body, notification_type, status)
@@ -192,9 +192,9 @@ class EmailService:
             return True
             
         except Exception as e:
-            print(f"邮件发送失败: {e}")
+            print(f"Email sending failed: {e}")
             
-            # 记录失败状态
+            # Record failure status
             try:
                 query = """
                     INSERT INTO email_notifications 
@@ -213,13 +213,13 @@ class EmailService:
     @staticmethod
     def get_notification_history(reservation_id: int) -> list:
         """
-        获取预订的邮件通知历史
+        Get email notification history for reservation
         
         Args:
-            reservation_id: 预订ID
+            reservation_id: Reservation ID
             
         Returns:
-            通知历史列表
+            List of notification history
         """
         query = """
             SELECT notification_id, recipient_email, subject, notification_type, 

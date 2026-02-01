@@ -1,6 +1,6 @@
 """
-报表服务模块
-处理入住率、收入等报表的生成和导出
+Report Service Module
+Handles generation and export of occupancy, revenue and other reports
 """
 
 import csv
@@ -10,45 +10,45 @@ from database.db_manager import db_manager
 
 
 class ReportService:
-    """报表服务类"""
+    """Report Service Class"""
     
     @staticmethod
     def generate_occupancy_report(start_date: str, end_date: str) -> Dict[str, Any]:
         """
-        生成入住率报表
+        Generate occupancy report
         
         Args:
-            start_date: 开始日期（YYYY-MM-DD）
-            end_date: 结束日期（YYYY-MM-DD）
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
             
         Returns:
-            报表数据字典
+            Report data dictionary
         """
         try:
             start_dt = datetime.strptime(start_date, '%Y-%m-%d')
             end_dt = datetime.strptime(end_date, '%Y-%m-%d')
             
             if end_dt <= start_dt:
-                return {'error': '结束日期必须晚于开始日期'}
+                return {'error': 'End date must be later than start date'}
         except ValueError:
-            return {'error': '日期格式无效'}
+            return {'error': 'Invalid date format'}
         
-        # 获取总房间数
+        # Get total room count
         total_rooms_query = "SELECT COUNT(*) as total FROM rooms WHERE is_active = 1"
         total_rooms_result = db_manager.execute_query(total_rooms_query)
         total_rooms = total_rooms_result[0]['total'] if total_rooms_result else 0
         
         if total_rooms == 0:
-            return {'error': '没有可用的房间数据'}
+            return {'error': 'No available room data'}
         
-        # 计算每日入住情况
+        # Calculate daily occupancy
         daily_data = []
         current_date = start_dt
         
         while current_date <= end_dt:
             date_str = current_date.strftime('%Y-%m-%d')
             
-            # 查询当日已占用房间数
+            # Query occupied rooms for the day
             occupied_query = """
                 SELECT COUNT(DISTINCT room_id) as occupied
                 FROM reservations
@@ -71,7 +71,7 @@ class ReportService:
             
             current_date += timedelta(days=1)
         
-        # 计算平均入住率
+        # Calculate average occupancy rate
         total_occupied = sum(d['occupied_rooms'] for d in daily_data)
         total_room_days = total_rooms * len(daily_data)
         average_occupancy = (total_occupied / total_room_days * 100) if total_room_days > 0 else 0
@@ -88,25 +88,25 @@ class ReportService:
     @staticmethod
     def generate_revenue_report(start_date: str, end_date: str) -> Dict[str, Any]:
         """
-        生成收入报表
+        Generate revenue report
         
         Args:
-            start_date: 开始日期（YYYY-MM-DD）
-            end_date: 结束日期（YYYY-MM-DD）
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
             
         Returns:
-            报表数据字典
+            Report data dictionary
         """
         try:
             start_dt = datetime.strptime(start_date, '%Y-%m-%d')
             end_dt = datetime.strptime(end_date, '%Y-%m-%d')
             
             if end_dt <= start_dt:
-                return {'error': '结束日期必须晚于开始日期'}
+                return {'error': 'End date must be later than start date'}
         except ValueError:
-            return {'error': '日期格式无效'}
+            return {'error': 'Invalid date format'}
         
-        # 查询总收入（已完成的预订）
+        # Query total revenue (completed reservations)
         total_revenue_query = """
             SELECT 
                 COUNT(*) as total_reservations,
@@ -124,7 +124,7 @@ class ReportService:
         total_reservations = revenue_result[0]['total_reservations'] if revenue_result else 0
         total_revenue = float(revenue_result[0]['total_revenue'] or 0) if revenue_result else 0.0
         
-        # 按房型统计收入
+        # Revenue by room type
         by_room_type_query = """
             SELECT 
                 rt.type_name,
@@ -152,7 +152,7 @@ class ReportService:
             for row in by_room_type
         ]
         
-        # 按支付方式统计
+        # Revenue by payment method
         by_payment_method_query = """
             SELECT 
                 payment_method,
@@ -178,7 +178,7 @@ class ReportService:
             for row in by_payment
         ]
         
-        # 计算平均每预订收入
+        # Calculate average revenue per reservation
         avg_revenue = (total_revenue / total_reservations) if total_reservations > 0 else 0
         
         return {
@@ -195,15 +195,15 @@ class ReportService:
     def export_to_csv(data: Dict[str, Any], filename: str, 
                      report_type: str) -> Tuple[bool, str]:
         """
-        导出报表到CSV文件
+        Export report to CSV file
         
         Args:
-            data: 报表数据
-            filename: 文件名
-            report_type: 报表类型 ('occupancy' 或 'revenue')
+            data: Report data
+            filename: Filename
+            report_type: Report type ('occupancy' or 'revenue')
             
         Returns:
-            (是否成功, 消息或文件路径)
+            (Success status, Message or file path)
         """
         try:
             if report_type == 'occupancy':
@@ -211,29 +211,29 @@ class ReportService:
             elif report_type == 'revenue':
                 return ReportService._export_revenue_csv(data, filename)
             else:
-                return False, "不支持的报表类型"
+                return False, "Unsupported report type"
         except Exception as e:
-            return False, f"导出失败: {str(e)}"
+            return False, f"Export failed: {str(e)}"
     
     @staticmethod
     def _export_occupancy_csv(data: Dict[str, Any], filename: str) -> Tuple[bool, str]:
-        """导出入住率报表为CSV"""
+        """Export occupancy report as CSV"""
         with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.writer(f)
             
-            # 写入标题
-            writer.writerow(['入住率报表'])
+            # Write title
+            writer.writerow(['Occupancy Report'])
             writer.writerow([])
-            writer.writerow(['报表期间', f"{data['start_date']} 至 {data['end_date']}"])
-            writer.writerow(['总房间数', data['total_rooms']])
-            writer.writerow(['报表天数', data['days']])
-            writer.writerow(['平均入住率', f"{data['average_occupancy_rate']}%"])
+            writer.writerow(['Report Period', f"{data['start_date']} to {data['end_date']}"])
+            writer.writerow(['Total Rooms', data['total_rooms']])
+            writer.writerow(['Report Days', data['days']])
+            writer.writerow(['Average Occupancy Rate', f"{data['average_occupancy_rate']}%"])
             writer.writerow([])
             
-            # 写入每日数据表头
-            writer.writerow(['日期', '总房间数', '已占用', '可用', '入住率(%)'])
+            # Write daily data headers
+            writer.writerow(['Date', 'Total Rooms', 'Occupied', 'Available', 'Occupancy Rate (%)'])
             
-            # 写入每日数据
+            # Write daily data
             for day in data['daily_data']:
                 writer.writerow([
                     day['date'],
@@ -247,22 +247,22 @@ class ReportService:
     
     @staticmethod
     def _export_revenue_csv(data: Dict[str, Any], filename: str) -> Tuple[bool, str]:
-        """导出收入报表为CSV"""
+        """Export revenue report as CSV"""
         with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.writer(f)
             
-            # 写入标题
-            writer.writerow(['收入报表'])
+            # Write title
+            writer.writerow(['Revenue Report'])
             writer.writerow([])
-            writer.writerow(['报表期间', f"{data['start_date']} 至 {data['end_date']}"])
-            writer.writerow(['总预订数', data['total_reservations']])
-            writer.writerow(['总收入', f"¥{data['total_revenue']:.2f}"])
-            writer.writerow(['平均每预订收入', f"¥{data['average_revenue_per_reservation']:.2f}"])
+            writer.writerow(['Report Period', f"{data['start_date']} to {data['end_date']}"])
+            writer.writerow(['Total Reservations', data['total_reservations']])
+            writer.writerow(['Total Revenue', f"¥{data['total_revenue']:.2f}"])
+            writer.writerow(['Average Revenue per Reservation', f"¥{data['average_revenue_per_reservation']:.2f}"])
             writer.writerow([])
             
-            # 按房型统计
-            writer.writerow(['按房型统计'])
-            writer.writerow(['房型', '预订数', '收入'])
+            # By room type
+            writer.writerow(['By Room Type'])
+            writer.writerow(['Room Type', 'Reservations', 'Revenue'])
             for item in data['by_room_type']:
                 writer.writerow([
                     item['room_type'],
@@ -271,9 +271,9 @@ class ReportService:
                 ])
             writer.writerow([])
             
-            # 按支付方式统计
-            writer.writerow(['按支付方式统计'])
-            writer.writerow(['支付方式', '交易数', '金额'])
+            # By payment method
+            writer.writerow(['By Payment Method'])
+            writer.writerow(['Payment Method', 'Transactions', 'Amount'])
             for item in data['by_payment_method']:
                 writer.writerow([
                     item['payment_method'],
@@ -289,19 +289,19 @@ class ReportService:
                       start_date: str = None, end_date: str = None,
                       limit: int = 100) -> List[Dict[str, Any]]:
         """
-        查询审计日志
+        Query audit logs
         
         Args:
-            user_id: 用户ID
-            operation_type: 操作类型
-            table_name: 表名
-            record_id: 记录ID
-            start_date: 开始日期
-            end_date: 结束日期
-            limit: 返回记录数限制
+            user_id: User ID
+            operation_type: Operation type
+            table_name: Table name
+            record_id: Record ID
+            start_date: Start date
+            end_date: End date
+            limit: Record limit
             
         Returns:
-            审计日志列表
+            Audit log list
         """
         query = """
             SELECT 
@@ -345,36 +345,36 @@ class ReportService:
     @staticmethod
     def backup_database(backup_name: str, user_id: int) -> Tuple[bool, str]:
         """
-        执行数据库备份
+        Execute database backup
         
         Args:
-            backup_name: 备份文件名（不含路径和扩展名）
-            user_id: 操作用户ID
+            backup_name: Backup filename (without path and extension)
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息或备份文件路径)
+            (Success status, Message or backup file path)
         """
         import os
         from datetime import datetime
         
         try:
-            # 创建备份目录
+            # Create backup directory
             backup_dir = 'backups'
             if not os.path.exists(backup_dir):
                 os.makedirs(backup_dir)
             
-            # 生成备份文件名
+            # Generate backup filename
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             backup_file = f"{backup_name}_{timestamp}.db"
             backup_path = os.path.join(backup_dir, backup_file)
             
-            # 执行备份
+            # Execute backup
             db_manager.backup_database(backup_path)
             
-            # 获取备份文件大小
+            # Get backup file size
             backup_size = os.path.getsize(backup_path)
             
-            # 记录备份信息
+            # Record backup information
             record_query = """
                 INSERT INTO backup_records 
                 (backup_file, backup_size, backup_type, status, created_by)
@@ -385,7 +385,7 @@ class ReportService:
                 (backup_path, backup_size, user_id)
             )
             
-            # 记录审计日志
+            # Record audit log
             audit_query = """
                 INSERT INTO audit_logs 
                 (user_id, operation_type, table_name, record_id, description)
@@ -399,7 +399,7 @@ class ReportService:
             return True, backup_path
             
         except Exception as e:
-            # 记录失败状态
+            # Record failure status
             try:
                 record_query = """
                     INSERT INTO backup_records 
@@ -413,15 +413,15 @@ class ReportService:
             except:
                 pass
             
-            return False, f"备份失败: {str(e)}"
+            return False, f"Backup failed: {str(e)}"
     
     @staticmethod
     def list_backups() -> List[Dict[str, Any]]:
         """
-        列出所有备份记录
+        List all backup records
         
         Returns:
-            备份记录列表
+            Backup record list
         """
         query = """
             SELECT 

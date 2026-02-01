@@ -1,6 +1,6 @@
 """
-预订服务模块
-处理预订的创建、修改、取消和查询
+Reservation Service Module
+Handles reservation creation, modification, cancellation and queries
 """
 
 from datetime import datetime, timedelta
@@ -12,9 +12,9 @@ from services.email_service import EmailService
 
 
 class ReservationService:
-    """预订服务类"""
+    """Reservation Service Class"""
     
-    # 预订状态常量
+    # Reservation status constants
     STATUS_CONFIRMED = 'Confirmed'
     STATUS_CHECKED_IN = 'CheckedIn'
     STATUS_CHECKED_OUT = 'CheckedOut'
@@ -26,51 +26,51 @@ class ReservationService:
                           num_guests: int, special_requests: str,
                           user_id: int) -> Tuple[bool, str, Optional[int]]:
         """
-        创建新预订
+        Create new reservation
         
         Args:
-            guest_info: 客人信息字典 {first_name, last_name, email, phone, id_number, address}
-            room_id: 房间ID
-            check_in_date: 入住日期（YYYY-MM-DD）
-            check_out_date: 退房日期（YYYY-MM-DD）
-            num_guests: 客人数量
-            special_requests: 特殊要求
-            user_id: 创建预订的用户ID
+            guest_info: Guest info dict {first_name, last_name, email, phone, id_number, address}
+            room_id: Room ID
+            check_in_date: Check-in date (YYYY-MM-DD)
+            check_out_date: Check-out date (YYYY-MM-DD)
+            num_guests: Number of guests
+            special_requests: Special requests
+            user_id: User ID creating the reservation
             
         Returns:
-            (是否成功, 消息, 预订ID)
+            (Success status, Message, Reservation ID)
         """
-        # 1. 验证日期
+        # 1. Validate dates
         try:
             check_in = datetime.strptime(check_in_date, '%Y-%m-%d')
             check_out = datetime.strptime(check_out_date, '%Y-%m-%d')
             today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             
             if check_in < today:
-                return False, "入住日期不能早于今天", None
+                return False, "Check-in date cannot be earlier than today", None
             
             if check_out <= check_in:
-                return False, "退房日期必须晚于入住日期", None
+                return False, "Check-out date must be later than check-in date", None
             
         except ValueError:
-            return False, "日期格式无效，请使用YYYY-MM-DD格式", None
+            return False, "Invalid date format, please use YYYY-MM-DD format", None
         
-        # 2. 验证房间
+        # 2. Validate room
         room = RoomService.get_room_by_id(room_id)
         if not room:
-            return False, "房间不存在", None
+            return False, "Room does not exist", None
         
         if room['status'] != RoomService.STATUS_CLEAN:
-            return False, f"房间当前状态为 {room['status']}，不可预订", None
+            return False, f"Room current status is {room['status']}, not available for booking", None
         
-        # 3. 验证客人数量
+        # 3. Validate guest count
         if num_guests > room['max_occupancy']:
-            return False, f"客人数量超过房间最大容纳量（{room['max_occupancy']}人）", None
+            return False, f"Number of guests exceeds room maximum capacity ({room['max_occupancy']} people)", None
         
         if num_guests < 1:
-            return False, "客人数量必须至少为1人", None
+            return False, "Number of guests must be at least 1", None
         
-        # 4. 检查超售防护 - 确保房间在指定日期范围内可用
+        # 4. Check overbooking protection - ensure room is available for specified date range
         conflict_check = """
             SELECT reservation_id 
             FROM reservations
@@ -88,9 +88,9 @@ class ReservationService:
         )
         
         if conflicts:
-            return False, f"房间 {room['room_number']} 在此日期范围内已被预订", None
+            return False, f"Room {room['room_number']} is already booked for this date range", None
         
-        # 5. 计算总价
+        # 5. Calculate total price
         pricing_info = PricingService.calculate_total_price(
             room['room_type_id'],
             check_in_date,
@@ -98,12 +98,12 @@ class ReservationService:
         )
         total_price = pricing_info['total']
         
-        # 6. 创建或获取客人记录
+        # 6. Create or get guest record
         guest_id = ReservationService._get_or_create_guest(guest_info)
         if not guest_id:
-            return False, "无法创建客人记录", None
+            return False, "Unable to create guest record", None
         
-        # 7. 创建预订
+        # 7. Create reservation
         reservation_query = """
             INSERT INTO reservations 
             (guest_id, room_id, check_in_date, check_out_date, num_guests, 
@@ -118,7 +118,7 @@ class ReservationService:
                  num_guests, total_price, special_requests, user_id)
             )
             
-            # 8. 记录审计日志
+            # 8. Record audit log
             ReservationService._log_audit(
                 user_id,
                 'CREATE',
@@ -128,15 +128,15 @@ class ReservationService:
                 f"Created reservation {reservation_id} for room {room['room_number']}"
             )
             
-            # 9. 发送确认邮件
+            # 9. Send confirmation email
             reservation_details = ReservationService.get_reservation_by_id(reservation_id)
             if reservation_details:
                 EmailService.send_reservation_confirmation(reservation_details)
             
-            return True, f"预订创建成功！预订号: {reservation_id}", reservation_id
+            return True, f"Reservation created successfully! Reservation #: {reservation_id}", reservation_id
             
         except Exception as e:
-            return False, f"创建预订失败: {str(e)}", None
+            return False, f"Failed to create reservation: {str(e)}", None
     
     @staticmethod
     def _get_or_create_guest(guest_info: Dict[str, Any]) -> Optional[int]:
@@ -297,60 +297,60 @@ class ReservationService:
                           new_num_guests: int = None, new_special_requests: str = None,
                           user_id: int = None) -> Tuple[bool, str]:
         """
-        修改预订
+        Modify reservation
         
         Args:
-            reservation_id: 预订ID
-            new_check_in: 新入住日期
-            new_check_out: 新退房日期
-            new_room_id: 新房间ID
-            new_num_guests: 新客人数量
-            new_special_requests: 新特殊要求
-            user_id: 操作用户ID
+            reservation_id: Reservation ID
+            new_check_in: New check-in date
+            new_check_out: New check-out date
+            new_room_id: New room ID
+            new_num_guests: New number of guests
+            new_special_requests: New special requests
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 获取当前预订
+        # Get current reservation
         current = ReservationService.get_reservation_by_id(reservation_id)
         if not current:
-            return False, "预订不存在"
+            return False, "Reservation does not exist"
         
         if current['status'] not in [ReservationService.STATUS_CONFIRMED]:
-            return False, f"预订状态为 {current['status']}，无法修改"
+            return False, f"Reservation status is {current['status']}, cannot modify"
         
-        # 检查是否已入住
+        # Check if already checked in
         check_in = datetime.strptime(current['check_in_date'], '%Y-%m-%d')
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         
         if check_in <= today and not new_check_in:
-            return False, "预订已到入住日期，无法修改"
+            return False, "Reservation has reached check-in date, cannot modify"
         
         changes = []
         updates = []
         params = []
         
-        # 处理日期修改
+        # Handle date modification
         final_check_in = new_check_in or current['check_in_date']
         final_check_out = new_check_out or current['check_out_date']
         final_room_id = new_room_id or current['room_id']
         
-        # 验证新日期
+        # Validate new dates
         if new_check_in or new_check_out:
             try:
                 check_in_dt = datetime.strptime(final_check_in, '%Y-%m-%d')
                 check_out_dt = datetime.strptime(final_check_out, '%Y-%m-%d')
                 
                 if check_in_dt < today:
-                    return False, "入住日期不能早于今天"
+                    return False, "Check-in date cannot be earlier than today"
                 
                 if check_out_dt <= check_in_dt:
-                    return False, "退房日期必须晚于入住日期"
+                    return False, "Check-out date must be later than check-in date"
                     
             except ValueError:
-                return False, "日期格式无效"
+                return False, "Invalid date format"
         
-        # 检查房间冲突（如果修改了日期或房间）
+        # Check room conflicts (if date or room changed)
         if new_check_in or new_check_out or new_room_id:
             conflict_check = """
                 SELECT reservation_id 
@@ -371,44 +371,44 @@ class ReservationService:
             )
             
             if conflicts:
-                return False, "所选房间在此日期范围内已被预订"
+                return False, "Selected room is already booked for this date range"
         
-        # 构建更新
+        # Build updates
         if new_check_in:
             updates.append("check_in_date = ?")
             params.append(new_check_in)
-            changes.append(f"入住日期: {current['check_in_date']} → {new_check_in}")
+            changes.append(f"Check-in date: {current['check_in_date']} → {new_check_in}")
         
         if new_check_out:
             updates.append("check_out_date = ?")
             params.append(new_check_out)
-            changes.append(f"退房日期: {current['check_out_date']} → {new_check_out}")
+            changes.append(f"Check-out date: {current['check_out_date']} → {new_check_out}")
         
         if new_room_id:
             room = RoomService.get_room_by_id(new_room_id)
             if not room:
-                return False, "新房间不存在"
+                return False, "New room does not exist"
             updates.append("room_id = ?")
             params.append(new_room_id)
-            changes.append(f"房间: {current['room_number']} → {room['room_number']}")
+            changes.append(f"Room: {current['room_number']} → {room['room_number']}")
         
         if new_num_guests:
             room = RoomService.get_room_by_id(final_room_id)
             if new_num_guests > room['max_occupancy']:
-                return False, f"客人数量超过房间最大容纳量（{room['max_occupancy']}人）"
+                return False, f"Number of guests exceeds room maximum capacity ({room['max_occupancy']} people)"
             updates.append("num_guests = ?")
             params.append(new_num_guests)
-            changes.append(f"客人数量: {current['num_guests']} → {new_num_guests}")
+            changes.append(f"Number of guests: {current['num_guests']} → {new_num_guests}")
         
         if new_special_requests is not None:
             updates.append("special_requests = ?")
             params.append(new_special_requests)
-            changes.append("特殊要求已更新")
+            changes.append("Special requests updated")
         
         if not updates:
-            return False, "没有需要修改的内容"
+            return False, "No content needs to be modified"
         
-        # 重新计算价格（如果日期或房间改变）
+        # Recalculate price (if date or room changed)
         if new_check_in or new_check_out or new_room_id:
             room = RoomService.get_room_by_id(final_room_id)
             pricing_info = PricingService.calculate_total_price(
@@ -420,18 +420,18 @@ class ReservationService:
             
             updates.append("total_price = ?")
             params.append(new_total)
-            changes.append(f"总价: ¥{current['total_price']:.2f} → ¥{new_total:.2f}")
+            changes.append(f"Total price: ¥{current['total_price']:.2f} → ¥{new_total:.2f}")
         
         updates.append("updated_at = CURRENT_TIMESTAMP")
         params.append(reservation_id)
         
-        # 执行更新
+        # Execute update
         query = f"UPDATE reservations SET {', '.join(updates)} WHERE reservation_id = ?"
         
         try:
             db_manager.execute_update(query, tuple(params))
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 ReservationService._log_audit(
                     user_id,
@@ -442,7 +442,7 @@ class ReservationService:
                     f"Modified reservation {reservation_id}: {'; '.join(changes)}"
                 )
             
-            # 发送修改通知邮件
+            # Send modification notification email
             updated_reservation = ReservationService.get_reservation_by_id(reservation_id)
             if updated_reservation:
                 EmailService.send_modification_notice(
@@ -450,39 +450,39 @@ class ReservationService:
                     "\n".join(changes)
                 )
             
-            return True, f"预订修改成功。\n修改内容:\n" + "\n".join(changes)
+            return True, f"Reservation modified successfully.\nModified content:\n" + "\n".join(changes)
             
         except Exception as e:
-            return False, f"修改失败: {str(e)}"
+            return False, f"Modification failed: {str(e)}"
     
     @staticmethod
     def cancel_reservation(reservation_id: int, user_id: int = None) -> Tuple[bool, str]:
         """
-        取消预订
+        Cancel reservation
         
         Args:
-            reservation_id: 预订ID
-            user_id: 操作用户ID
+            reservation_id: Reservation ID
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 获取预订
+        # Get reservation
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         if not reservation:
-            return False, "预订不存在"
+            return False, "Reservation does not exist"
         
         if reservation['status'] == ReservationService.STATUS_CANCELLED:
-            return False, "预订已被取消"
+            return False, "Reservation has already been cancelled"
         
         if reservation['status'] == ReservationService.STATUS_CHECKED_OUT:
-            return False, "已退房的预订无法取消"
+            return False, "Cannot cancel reservation that has already checked out"
         
-        # 如果已入住，需要先退房
+        # If already checked in, need to check out first
         if reservation['status'] == ReservationService.STATUS_CHECKED_IN:
-            return False, "已入住的预订需要先办理退房"
+            return False, "Checked-in reservation needs to check out first"
         
-        # 取消预订
+        # Cancel reservation
         query = """
             UPDATE reservations 
             SET status = 'Cancelled', updated_at = CURRENT_TIMESTAMP
@@ -492,7 +492,7 @@ class ReservationService:
         try:
             db_manager.execute_update(query, (reservation_id,))
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 ReservationService._log_audit(
                     user_id,
@@ -503,44 +503,44 @@ class ReservationService:
                     f"Cancelled reservation {reservation_id}"
                 )
             
-            # 发送取消通知邮件
+            # Send cancellation notification email
             EmailService.send_cancellation_notice(reservation)
             
-            return True, "预订已取消"
+            return True, "Reservation cancelled"
             
         except Exception as e:
-            return False, f"取消失败: {str(e)}"
+            return False, f"Cancellation failed: {str(e)}"
     
     @staticmethod
     def check_in(reservation_id: int, user_id: int = None) -> Tuple[bool, str]:
         """
-        办理入住
+        Check in guest
         
         Args:
-            reservation_id: 预订ID
-            user_id: 操作用户ID
+            reservation_id: Reservation ID
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 获取预订
+        # Get reservation
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         if not reservation:
-            return False, "预订不存在"
+            return False, "Reservation does not exist"
         
         if reservation['status'] != ReservationService.STATUS_CONFIRMED:
-            return False, f"预订状态为 {reservation['status']}，无法办理入住"
+            return False, f"Reservation status is {reservation['status']}, cannot check in"
         
-        # 检查入住日期
+        # Check check-in date
         check_in_date = datetime.strptime(reservation['check_in_date'], '%Y-%m-%d')
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         
-        # 允许提前一天入住
+        # Allow check-in one day early
         if check_in_date > today + timedelta(days=1):
-            return False, f"入住日期为 {reservation['check_in_date']}，现在还不能办理入住"
+            return False, f"Check-in date is {reservation['check_in_date']}, cannot check in yet"
         
         try:
-            # 更新预订状态
+            # Update reservation status
             query = """
                 UPDATE reservations 
                 SET status = 'CheckedIn', updated_at = CURRENT_TIMESTAMP
@@ -548,14 +548,14 @@ class ReservationService:
             """
             db_manager.execute_update(query, (reservation_id,))
             
-            # 更新房间状态为已占用
+            # Update room status to occupied
             RoomService.update_room_status(
                 reservation['room_id'],
                 RoomService.STATUS_OCCUPIED,
                 user_id
             )
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 ReservationService._log_audit(
                     user_id,
@@ -566,41 +566,41 @@ class ReservationService:
                     f"Checked in reservation {reservation_id}, room {reservation['room_number']}"
                 )
             
-            return True, f"入住办理成功！房间号: {reservation['room_number']}"
+            return True, f"Check-in successful! Room number: {reservation['room_number']}"
             
         except Exception as e:
-            return False, f"入住办理失败: {str(e)}"
+            return False, f"Check-in failed: {str(e)}"
     
     @staticmethod
     def check_out(reservation_id: int, payment_method: str, 
                  payment_amount: float, user_id: int = None) -> Tuple[bool, str]:
         """
-        办理退房
+        Check out guest
         
         Args:
-            reservation_id: 预订ID
-            payment_method: 支付方式
-            payment_amount: 支付金额
-            user_id: 操作用户ID
+            reservation_id: Reservation ID
+            payment_method: Payment method
+            payment_amount: Payment amount
+            user_id: Operating user ID
             
         Returns:
-            (是否成功, 消息)
+            (Success status, Message)
         """
-        # 获取预订
+        # Get reservation
         reservation = ReservationService.get_reservation_by_id(reservation_id)
         if not reservation:
-            return False, "预订不存在"
+            return False, "Reservation does not exist"
         
         if reservation['status'] != ReservationService.STATUS_CHECKED_IN:
-            return False, f"预订状态为 {reservation['status']}，无法办理退房"
+            return False, f"Reservation status is {reservation['status']}, cannot check out"
         
-        # 验证支付方式
+        # Validate payment method
         valid_methods = ['Cash', 'CreditCard', 'DebitCard', 'OnlineTransfer']
         if payment_method not in valid_methods:
-            return False, f"无效的支付方式。有效选项: {', '.join(valid_methods)}"
+            return False, f"Invalid payment method. Valid options: {', '.join(valid_methods)}"
         
         try:
-            # 更新预订状态
+            # Update reservation status
             query = """
                 UPDATE reservations 
                 SET status = 'CheckedOut', updated_at = CURRENT_TIMESTAMP
@@ -608,7 +608,7 @@ class ReservationService:
             """
             db_manager.execute_update(query, (reservation_id,))
             
-            # 记录支付
+            # Record payment
             payment_query = """
                 INSERT INTO payments 
                 (reservation_id, amount, payment_method, payment_status, processed_by)
@@ -619,14 +619,14 @@ class ReservationService:
                 (reservation_id, payment_amount, payment_method, user_id or 1)
             )
             
-            # 更新房间状态为脏污
+            # Update room status to dirty
             RoomService.update_room_status(
                 reservation['room_id'],
                 RoomService.STATUS_DIRTY,
                 user_id
             )
             
-            # 记录审计日志
+            # Record audit log
             if user_id:
                 ReservationService._log_audit(
                     user_id,
@@ -637,21 +637,21 @@ class ReservationService:
                     f"Checked out reservation {reservation_id}, payment: {payment_method} ¥{payment_amount}"
                 )
             
-            return True, f"退房办理成功！支付金额: ¥{payment_amount:.2f}"
+            return True, f"Check-out successful! Payment amount: ¥{payment_amount:.2f}"
             
         except Exception as e:
-            return False, f"退房办理失败: {str(e)}"
+            return False, f"Check-out failed: {str(e)}"
     
     @staticmethod
     def get_upcoming_checkins(days: int = 1) -> List[Dict[str, Any]]:
         """
-        获取即将入住的预订列表
+        Get list of upcoming check-ins
         
         Args:
-            days: 未来天数
+            days: Number of future days
             
         Returns:
-            预订列表
+            Reservation list
         """
         today = datetime.now().strftime('%Y-%m-%d')
         end_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
@@ -683,10 +683,10 @@ class ReservationService:
     @staticmethod
     def get_current_checkins() -> List[Dict[str, Any]]:
         """
-        获取当前入住的预订列表
+        Get list of current check-ins
         
         Returns:
-            预订列表
+            Reservation list
         """
         query = """
             SELECT 
@@ -713,7 +713,7 @@ class ReservationService:
     @staticmethod
     def _log_audit(user_id: int, operation_type: str, table_name: str,
                    record_id: int, old_value: str, description: str):
-        """记录审计日志"""
+        """Record audit log"""
         query = """
             INSERT INTO audit_logs 
             (user_id, operation_type, table_name, record_id, old_value, description)
@@ -725,4 +725,4 @@ class ReservationService:
                 (user_id, operation_type, table_name, record_id, old_value, description)
             )
         except Exception as e:
-            print(f"记录审计日志失败: {e}")
+            print(f"Failed to record audit log: {e}")
