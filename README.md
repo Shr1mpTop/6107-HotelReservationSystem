@@ -81,65 +81,72 @@ A professional, enterprise-grade Hotel Reservation Management System built with 
     cd 6107-HotelReservationSystem
     ```
 
-2.  **Start the Backend Server:**
+2.  **Quick Start (Recommended) - Start Everything:**
 
-    The FastAPI backend must be running for the frontend to work.
+    Run the all-in-one startup script that launches both backend and frontend:
     - **On Windows:**
       ```bat
-      run_web.bat
+      start.bat
       ```
     - **On Linux or macOS:**
       ```bash
-      chmod +x run_web.sh
-      ./run_web.sh
+      chmod +x start.sh
+      ./start.sh
       ```
 
-    The backend will start on `http://localhost:8000`
+    This will automatically:
+    - Start the FastAPI backend API on `http://localhost:8000`
+    - Start the Next.js frontend on `http://localhost:3000`
+    - Open API documentation at `http://localhost:8000/docs`
 
-3.  **Start the Next.js Frontend (Recommended):**
+3.  **Manual Start (Advanced):**
 
-    In a new terminal window:
-    - **On Windows:**
-      ```bat
-      run_frontend.bat
-      ```
-    - **On Linux or macOS:**
-      ```bash
-      chmod +x run_frontend.sh
-      ./run_frontend.sh
-      ```
+    If you prefer to start services separately:
 
-    The frontend will start on `http://localhost:3000`
+    **Backend API Server:**
 
-4.  **Alternative: CLI Interface**
+    ```bash
+    # Windows
+    run_backend.bat
 
-    For command-line access:
-    - **On Windows:**
-      ```bat
-      run.bat
-      ```
-    - **On Linux or macOS:**
-      ```bash
-      chmod +x run.sh
-      ./run.sh
-      ```
+    # Linux/macOS
+    ./run_backend.sh
+    ```
 
-    The startup scripts will automatically:
-    - Check if required dependencies are installed
-    - Install all required packages from `requirements.txt` (Python) or `package.json` (Node.js)
-    - Check if Python is installed.
-    - Install all required dependencies from `requirements.txt`.
-    - Create the `data/` directory if it doesn't exist.
-    - Initialize the `hrms.db` database with tables and default data on the first run.
+    **Next.js Frontend:**
+
+    ```bash
+    # Windows
+    run_frontend.bat
+
+    # Linux/macOS
+    ./run_frontend.sh
+    ```
+
+    **CLI Interface (Optional):**
+
+    ```bash
+    # Windows
+    run.bat
+
+    # Linux/macOS
+    ./run.sh
+    ```
+
+All startup scripts will automatically:
+- Check for required dependencies (Python 3.8+, Node.js 18+)
+- Install necessary packages from `requirements.txt` (Python) or `package.json` (Node.js)
+- Create the `data/` directory if it doesn't exist
+- Initialize the `hrms.db` database with tables and default data on the first run
 
 ## How to Use
 
 ### Next.js Web Interface (Recommended)
 
-1. **Start the backend server** (see installation steps above)
-2. **Start the frontend server** using `run_frontend.bat` or `run_frontend.sh`
-3. **Open your browser** and navigate to: `http://localhost:3000`
-4. **Login** with one of the demo accounts (see credentials below)
+1. **Start the system** using `start.bat` or `start.sh` (easiest way)
+   - Or manually start backend (`run_backend`) and frontend (`run_frontend`) separately
+2. **Open your browser** and navigate to: `http://localhost:3000`
+3. **Login** with one of the demo accounts (see credentials below)
 
 The Next.js interface provides:
 
